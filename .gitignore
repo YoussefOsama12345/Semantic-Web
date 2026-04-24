@@ -1,6 +1,7 @@
 # Build output
 target/
 *.class
+dependency-reduced-pom.xml
 
 # Inferred ontology generated at runtime
 movies-inferred.owl

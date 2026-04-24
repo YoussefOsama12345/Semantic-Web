@@ -5,7 +5,6 @@ import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.InferenceType;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
-import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.util.Arrays;
 
@@ -30,15 +29,16 @@ public class ReasoningEngine {
         OWLClass movie       = df.getOWLClass(IRI.create(ns + "Movie"));
         OWLClass actor       = df.getOWLClass(IRI.create(ns + "Actor"));
         OWLClass director    = df.getOWLClass(IRI.create(ns + "Director"));
+        OWLClass oscarAward  = df.getOWLClass(IRI.create(ns + "OscarAward"));
+        OWLClass cannesAward = df.getOWLClass(IRI.create(ns + "CannesAward"));
         OWLClass masterpiece = df.getOWLClass(IRI.create(ns + "MasterpieceMovie"));
 
-        OWLObjectProperty hasDirector  = df.getOWLObjectProperty(IRI.create(ns + "hasDirector"));
-        OWLObjectProperty hasActor     = df.getOWLObjectProperty(IRI.create(ns + "hasActor"));
+        OWLObjectProperty hasDirector    = df.getOWLObjectProperty(IRI.create(ns + "hasDirector"));
+        OWLObjectProperty hasActor       = df.getOWLObjectProperty(IRI.create(ns + "hasActor"));
         OWLObjectProperty belongsToGenre = df.getOWLObjectProperty(IRI.create(ns + "belongsToGenre"));
-        OWLObjectProperty similarTo    = df.getOWLObjectProperty(IRI.create(ns + "similarTo"));
-        OWLObjectProperty freqCollab   = df.getOWLObjectProperty(IRI.create(ns + "frequentCollaborator"));
-
-        OWLDataProperty rating = df.getOWLDataProperty(IRI.create(ns + "imdbRating"));
+        OWLObjectProperty wonAward       = df.getOWLObjectProperty(IRI.create(ns + "wonAward"));
+        OWLObjectProperty similarTo      = df.getOWLObjectProperty(IRI.create(ns + "similarTo"));
+        OWLObjectProperty freqCollab     = df.getOWLObjectProperty(IRI.create(ns + "frequentCollaborator"));
 
         SWRLVariable m1 = df.getSWRLVariable(IRI.create(ns + "m1"));
         SWRLVariable m2 = df.getSWRLVariable(IRI.create(ns + "m2"));
@@ -46,9 +46,10 @@ public class ReasoningEngine {
         SWRLVariable a  = df.getSWRLVariable(IRI.create(ns + "a"));
         SWRLVariable d  = df.getSWRLVariable(IRI.create(ns + "d"));
         SWRLVariable g  = df.getSWRLVariable(IRI.create(ns + "g"));
-        SWRLVariable r  = df.getSWRLVariable(IRI.create(ns + "r"));
-        SWRLVariable r1 = df.getSWRLVariable(IRI.create(ns + "r1"));
-        SWRLVariable r2 = df.getSWRLVariable(IRI.create(ns + "r2"));
+        SWRLVariable o  = df.getSWRLVariable(IRI.create(ns + "o"));
+        SWRLVariable c  = df.getSWRLVariable(IRI.create(ns + "c"));
+        SWRLVariable a1 = df.getSWRLVariable(IRI.create(ns + "a1"));
+        SWRLVariable a2 = df.getSWRLVariable(IRI.create(ns + "a2"));
 
         SWRLRule rule1 = df.getSWRLRule(
                 Arrays.asList(
@@ -60,32 +61,27 @@ public class ReasoningEngine {
                 Arrays.asList(df.getSWRLObjectPropertyAtom(similarTo, m1, m2)));
         mgr.addAxiom(ont, rule1);
 
-        SWRLLiteralArgument eight = df.getSWRLLiteralArgument(
-                df.getOWLLiteral("8.0", OWL2Datatype.XSD_DOUBLE));
         SWRLRule rule2 = df.getSWRLRule(
                 Arrays.asList(
                         df.getSWRLClassAtom(movie, m1),
                         df.getSWRLClassAtom(movie, m2),
+                        df.getSWRLObjectPropertyAtom(wonAward, m1, a1),
+                        df.getSWRLClassAtom(oscarAward, a1),
+                        df.getSWRLObjectPropertyAtom(wonAward, m2, a2),
+                        df.getSWRLClassAtom(oscarAward, a2),
                         df.getSWRLObjectPropertyAtom(belongsToGenre, m1, g),
                         df.getSWRLObjectPropertyAtom(belongsToGenre, m2, g),
-                        df.getSWRLDataPropertyAtom(rating, m1, r1),
-                        df.getSWRLDataPropertyAtom(rating, m2, r2),
-                        df.getSWRLBuiltInAtom(IRI.create("http://www.w3.org/2003/11/swrlb#greaterThan"),
-                                Arrays.asList(r1, eight)),
-                        df.getSWRLBuiltInAtom(IRI.create("http://www.w3.org/2003/11/swrlb#greaterThan"),
-                                Arrays.asList(r2, eight)),
                         df.getSWRLDifferentIndividualsAtom(m1, m2)),
                 Arrays.asList(df.getSWRLObjectPropertyAtom(similarTo, m1, m2)));
         mgr.addAxiom(ont, rule2);
 
-        SWRLLiteralArgument nine = df.getSWRLLiteralArgument(
-                df.getOWLLiteral("9.0", OWL2Datatype.XSD_DOUBLE));
         SWRLRule rule3 = df.getSWRLRule(
                 Arrays.asList(
                         df.getSWRLClassAtom(movie, m),
-                        df.getSWRLDataPropertyAtom(rating, m, r),
-                        df.getSWRLBuiltInAtom(IRI.create("http://www.w3.org/2003/11/swrlb#greaterThan"),
-                                Arrays.asList(r, nine))),
+                        df.getSWRLObjectPropertyAtom(wonAward, m, o),
+                        df.getSWRLClassAtom(oscarAward, o),
+                        df.getSWRLObjectPropertyAtom(wonAward, m, c),
+                        df.getSWRLClassAtom(cannesAward, c)),
                 Arrays.asList(df.getSWRLClassAtom(masterpiece, m)));
         mgr.addAxiom(ont, rule3);
 

@@ -3,8 +3,6 @@ package com.semantic.movies.ontology;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.reasoner.InferenceType;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.util.InferredAxiomGenerator;
 import org.semanticweb.owlapi.util.InferredClassAssertionAxiomGenerator;
 import org.semanticweb.owlapi.util.InferredOntologyGenerator;
@@ -36,19 +34,12 @@ public class OntologyManager {
     }
 
     public void saveInferred(String outputPath, ReasoningEngine engine) throws Exception {
-        OWLReasoner reasoner = engine.getReasoner();
-        reasoner.precomputeInferences(
-                InferenceType.CLASS_HIERARCHY,
-                InferenceType.CLASS_ASSERTIONS,
-                InferenceType.OBJECT_PROPERTY_ASSERTIONS,
-                InferenceType.DATA_PROPERTY_ASSERTIONS);
-
         List<InferredAxiomGenerator<? extends OWLAxiom>> generators = new ArrayList<>();
         generators.add(new InferredSubClassAxiomGenerator());
         generators.add(new InferredClassAssertionAxiomGenerator());
         generators.add(new InferredPropertyAssertionGenerator());
 
-        InferredOntologyGenerator iog = new InferredOntologyGenerator(reasoner, generators);
+        InferredOntologyGenerator iog = new InferredOntologyGenerator(engine.getReasoner(), generators);
         iog.fillOntology(manager.getOWLDataFactory(), ontology);
 
         File out = new File(outputPath);

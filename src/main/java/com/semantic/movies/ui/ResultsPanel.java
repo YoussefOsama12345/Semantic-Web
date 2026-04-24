@@ -2,64 +2,103 @@ package com.semantic.movies.ui;
 
 import com.semantic.movies.model.SearchResult;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class ResultsPanel extends JPanel {
 
-    private final JPanel listPanel = new JPanel();
+    private static final String CARD_LIST        = "list";
+    private static final String CARD_PLACEHOLDER = "placeholder";
+
+    private final JPanel list = new JPanel();
+    private final JLabel placeholderIcon  = new JLabel("", SwingConstants.CENTER);
+    private final JLabel placeholderLabel = new JLabel("", SwingConstants.CENTER);
+    private final CardLayout cards = new CardLayout();
+    private final JPanel cardHost = new JPanel(cards);
     private final Consumer<SearchResult> onMovieClicked;
 
     public ResultsPanel(Consumer<SearchResult> onMovieClicked) {
         this.onMovieClicked = onMovieClicked;
 
         setLayout(new BorderLayout());
-        setBackground(Color.WHITE);
+        setBackground(Theme.BG);
 
-        listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-        listPanel.setBackground(Color.WHITE);
+        cardHost.setBackground(Theme.BG);
+        cardHost.add(buildListCard(),        CARD_LIST);
+        cardHost.add(buildPlaceholderCard(), CARD_PLACEHOLDER);
+        add(cardHost, BorderLayout.CENTER);
 
-        JScrollPane scroll = new JScrollPane(listPanel,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, new Color(0xE0E0E0)));
-        scroll.getVerticalScrollBar().setUnitIncrement(16);
-        add(scroll, BorderLayout.CENTER);
-
-        showPlaceholder("Search above to see results.");
+        reset();
     }
 
-    public void showLoading()  { showPlaceholder("Searching..."); }
-    public void showError(String message) { showPlaceholder("Error: " + message); }
+    public void reset()                 { showPlaceholder("\uD83C\uDFAC", "Type a movie, actor, director, or genre above to begin."); }
+    public void showLoading()           { showPlaceholder("\u29D7", "Searching..."); }
+    public void showError(String msg)   { showPlaceholder("\u26A0", "Error: " + msg); }
 
     public void showResults(List<SearchResult> results) {
-        listPanel.removeAll();
         if (results == null || results.isEmpty()) {
-            showPlaceholder("No results found.");
+            showPlaceholder("\uD83D\uDD0D", "No results found. Try a different search.");
             return;
         }
-        for (SearchResult r : results) {
-            MovieListItem item = new MovieListItem(r, onMovieClicked);
-            item.setAlignmentX(Component.LEFT_ALIGNMENT);
-            listPanel.add(item);
-        }
-        listPanel.add(Box.createVerticalGlue());
-        listPanel.revalidate();
-        listPanel.repaint();
+        list.removeAll();
+        for (SearchResult r : results) list.add(new MovieListItem(r, onMovieClicked));
+        list.add(Box.createVerticalGlue());
+        list.revalidate();
+        list.repaint();
+        cards.show(cardHost, CARD_LIST);
     }
 
-    private void showPlaceholder(String text) {
-        listPanel.removeAll();
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("SansSerif", Font.PLAIN, 15));
-        label.setForeground(new Color(0x888888));
-        label.setBorder(new EmptyBorder(24, 24, 24, 24));
-        label.setAlignmentX(Component.LEFT_ALIGNMENT);
-        listPanel.add(label);
-        listPanel.revalidate();
-        listPanel.repaint();
+    private JScrollPane buildListCard() {
+        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
+        list.setBackground(Theme.BG);
+        list.setBorder(new EmptyBorder(6, 10, 12, 10));
+
+        JScrollPane scroll = new JScrollPane(list,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.setBorder(null);
+        scroll.getViewport().setBackground(Theme.BG);
+        scroll.getVerticalScrollBar().setUnitIncrement(18);
+        return scroll;
+    }
+
+    private JPanel buildPlaceholderCard() {
+        placeholderIcon.setFont(new Font("SansSerif", Font.PLAIN, 42));
+        placeholderIcon.setForeground(Theme.TEXT_MUTED);
+
+        placeholderLabel.setFont(Theme.FONT_SUBTITLE);
+        placeholderLabel.setForeground(Theme.TEXT_SECONDARY);
+        placeholderLabel.setBorder(new EmptyBorder(14, 24, 0, 24));
+
+        JPanel stack = new JPanel();
+        stack.setOpaque(false);
+        stack.setLayout(new BoxLayout(stack, BoxLayout.Y_AXIS));
+        placeholderIcon.setAlignmentX(CENTER_ALIGNMENT);
+        placeholderLabel.setAlignmentX(CENTER_ALIGNMENT);
+        stack.add(placeholderIcon);
+        stack.add(placeholderLabel);
+
+        JPanel center = new JPanel(new GridBagLayout());
+        center.setBackground(Theme.BG);
+        center.add(stack, new GridBagConstraints());
+        return center;
+    }
+
+    private void showPlaceholder(String emoji, String text) {
+        placeholderIcon.setText(emoji);
+        placeholderLabel.setText(text);
+        cards.show(cardHost, CARD_PLACEHOLDER);
     }
 }

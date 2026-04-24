@@ -8,52 +8,50 @@ public final class QueryTemplates {
             "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
             "PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>\n";
 
-    public static final String Q_BY_TITLE = PREFIXES +
-            "SELECT DISTINCT ?movie ?title WHERE {\n" +
+    private static final String SELECT_MOVIE_FIELDS =
+            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel WHERE {\n" +
             "  ?movie a mov:Movie ;\n" +
             "         mov:title ?title .\n" +
+            "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
+            "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
+            "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n";
+
+    public static final String Q_BY_TITLE = PREFIXES + SELECT_MOVIE_FIELDS +
             "  FILTER(CONTAINS(LCASE(STR(?title)), LCASE(\"${query}\")))\n" +
             "} ORDER BY ?title";
 
-    public static final String Q_BY_ACTOR = PREFIXES +
-            "SELECT DISTINCT ?movie ?title WHERE {\n" +
-            "  ?actor a mov:Actor ;\n" +
-            "         mov:fullName ?actorName .\n" +
-            "  ?movie mov:hasActor ?actor ;\n" +
-            "         mov:title ?title .\n" +
+    public static final String Q_BY_ACTOR = PREFIXES + SELECT_MOVIE_FIELDS +
+            "  ?movie mov:hasActor ?actor .\n" +
+            "  ?actor a mov:Actor ; mov:fullName ?actorName .\n" +
             "  FILTER(CONTAINS(LCASE(STR(?actorName)), LCASE(\"${query}\")))\n" +
             "} ORDER BY ?title";
 
-    public static final String Q_BY_DIRECTOR = PREFIXES +
-            "SELECT DISTINCT ?movie ?title WHERE {\n" +
-            "  ?director a mov:Director ;\n" +
-            "            mov:fullName ?directorName .\n" +
-            "  ?movie mov:hasDirector ?director ;\n" +
-            "         mov:title ?title .\n" +
+    public static final String Q_BY_DIRECTOR = PREFIXES + SELECT_MOVIE_FIELDS +
             "  FILTER(CONTAINS(LCASE(STR(?directorName)), LCASE(\"${query}\")))\n" +
             "} ORDER BY ?title";
 
-    public static final String Q_BY_GENRE = PREFIXES +
-            "SELECT DISTINCT ?movie ?title WHERE {\n" +
-            "  ?movie a mov:Movie ;\n" +
-            "         mov:belongsToGenre ?genre ;\n" +
-            "         mov:title ?title .\n" +
-            "  ?genre rdfs:label ?genreLabel .\n" +
+    public static final String Q_BY_GENRE = PREFIXES + SELECT_MOVIE_FIELDS +
             "  FILTER(CONTAINS(LCASE(STR(?genreLabel)), LCASE(\"${query}\")))\n" +
             "} ORDER BY ?title";
 
     public static final String Q_SIMILAR = PREFIXES +
-            "SELECT DISTINCT ?movie ?title WHERE {\n" +
+            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel WHERE {\n" +
             "  ?source mov:title \"${movieTitle}\" .\n" +
             "  ?source mov:similarTo ?movie .\n" +
             "  ?movie  mov:title ?title .\n" +
+            "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
+            "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
+            "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n" +
             "  FILTER(?source != ?movie)\n" +
             "} ORDER BY ?title";
 
     public static final String Q_MASTERPIECES = PREFIXES +
-            "SELECT DISTINCT ?movie ?title WHERE {\n" +
+            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel WHERE {\n" +
             "  ?movie a mov:MasterpieceMovie ;\n" +
             "         mov:title ?title .\n" +
+            "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
+            "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
+            "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n" +
             "} ORDER BY ?title";
 
     private QueryTemplates() { }

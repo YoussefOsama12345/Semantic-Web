@@ -1,75 +1,142 @@
 package com.semantic.movies.ui;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
-import java.awt.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
 public class SearchPanel extends JPanel {
 
-    private static final String PLACEHOLDER = "Search by movie, actor, director, or genre...";
+    private static final String PLACEHOLDER = "Search movies, actors, directors, or genres...";
+    private static final int DEBOUNCE_MS = 280;
 
-    private final JTextField searchField = new JTextField();
+    private final JTextField field = new JTextField();
+    private final JLabel clearIcon = new JLabel("\u2715", SwingConstants.CENTER);
     private final Consumer<String> onSearch;
+    private final Timer debounce;
 
     public SearchPanel(Consumer<String> onSearch) {
         this.onSearch = onSearch;
+        this.debounce = new Timer(DEBOUNCE_MS, e -> fireSearch());
+        debounce.setRepeats(false);
 
-        setLayout(new BorderLayout(8, 0));
-        setBackground(Color.WHITE);
-        setBorder(new EmptyBorder(16, 20, 16, 20));
+        setLayout(new BorderLayout());
+        setBackground(Theme.BG);
+        setBorder(new EmptyBorder(18, 24, 18, 24));
 
-        searchField.setFont(new Font("SansSerif", Font.PLAIN, 16));
-        searchField.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
-                new EmptyBorder(8, 12, 8, 12)));
-        installPlaceholder();
-        searchField.addActionListener(e -> fireSearch());
+        add(buildSearchBar(), BorderLayout.CENTER);
+    }
 
-        JButton searchBtn = new JButton("Search");
-        searchBtn.setFont(searchBtn.getFont().deriveFont(Font.BOLD));
-        searchBtn.addActionListener(e -> fireSearch());
+    private JPanel buildSearchBar() {
+        RoundedBar bar = new RoundedBar();
+        bar.setLayout(new BorderLayout(10, 0));
+        bar.setBorder(new EmptyBorder(0, 16, 0, 12));
+        bar.setPreferredSize(new Dimension(0, Theme.INPUT_HEIGHT));
 
-        JButton clearBtn = new JButton("Clear");
-        clearBtn.addActionListener(e -> {
-            searchField.setText("");
-            installPlaceholder();
-            searchField.requestFocusInWindow();
+        configureField();
+        configureClearIcon();
+
+        bar.add(field,     BorderLayout.CENTER);
+        bar.add(clearIcon, BorderLayout.EAST);
+        return bar;
+    }
+
+    private void configureField() {
+        field.setFont(Theme.FONT_INPUT);
+        field.setBorder(null);
+        field.setOpaque(false);
+        field.setForeground(Theme.TEXT_PRIMARY);
+
+        field.addActionListener(e -> {
+            debounce.stop();
+            fireSearch();
         });
-
-        JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        buttons.setOpaque(false);
-        buttons.add(searchBtn);
-        buttons.add(clearBtn);
-
-        add(searchField, BorderLayout.CENTER);
-        add(buttons, BorderLayout.EAST);
-    }
-
-    private void fireSearch() {
-        String text = searchField.getText();
-        if (text == null || text.equals(PLACEHOLDER)) return;
-        if (!text.isBlank()) onSearch.accept(text.trim());
-    }
-
-    private void installPlaceholder() {
-        searchField.setText(PLACEHOLDER);
-        searchField.setForeground(Color.GRAY);
-        searchField.addFocusListener(new FocusAdapter() {
+        field.addFocusListener(new FocusAdapter() {
             @Override public void focusGained(FocusEvent e) {
-                if (searchField.getText().equals(PLACEHOLDER)) {
-                    searchField.setText("");
-                    searchField.setForeground(Color.BLACK);
+                if (field.getText().equals(PLACEHOLDER)) {
+                    field.setText("");
+                    field.setForeground(Theme.TEXT_PRIMARY);
                 }
             }
             @Override public void focusLost(FocusEvent e) {
-                if (searchField.getText().isBlank()) {
-                    searchField.setText(PLACEHOLDER);
-                    searchField.setForeground(Color.GRAY);
-                }
+                if (field.getText().isBlank()) showPlaceholder();
+            }
+        });
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e)  { onTextChanged(); }
+            @Override public void removeUpdate(DocumentEvent e)  { onTextChanged(); }
+            @Override public void changedUpdate(DocumentEvent e) { onTextChanged(); }
+        });
+        showPlaceholder();
+    }
+
+    private void configureClearIcon() {
+        clearIcon.setFont(new Font("SansSerif", Font.BOLD, 14));
+        clearIcon.setForeground(Theme.TEXT_MUTED);
+        clearIcon.setPreferredSize(new Dimension(22, 22));
+        clearIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        clearIcon.setVisible(false);
+        clearIcon.addMouseListener(new MouseAdapter() {
+            @Override public void mouseEntered(MouseEvent e) { clearIcon.setForeground(Theme.TEXT_PRIMARY); }
+            @Override public void mouseExited(MouseEvent e)  { clearIcon.setForeground(Theme.TEXT_MUTED); }
+            @Override public void mouseClicked(MouseEvent e) {
+                field.setText("");
+                showPlaceholder();
+                field.requestFocusInWindow();
             }
         });
     }
+
+    private void onTextChanged() {
+        String text = field.getText();
+        boolean hasRealText = !text.isBlank() && !text.equals(PLACEHOLDER);
+        clearIcon.setVisible(hasRealText);
+        debounce.restart();
+    }
+
+    private void fireSearch() {
+        String text = field.getText();
+        if (text.equals(PLACEHOLDER) || text.isBlank()) {
+            onSearch.accept("");
+            return;
+        }
+        onSearch.accept(text.trim());
+    }
+
+    private void showPlaceholder() {
+        field.setText(PLACEHOLDER);
+        field.setForeground(Theme.TEXT_MUTED);
+        clearIcon.setVisible(false);
+    }
+
+    private static class RoundedBar extends JPanel {
+        RoundedBar() { setOpaque(false); }
+
+        @Override protected void paintComponent(Graphics g) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(Theme.CARD);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+            g2.setColor(Theme.BORDER);
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+            g2.dispose();
+        }
+    }
+
 }

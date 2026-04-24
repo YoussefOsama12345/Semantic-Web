@@ -66,18 +66,17 @@ java -jar target/movie-recommender-1.0.0.jar
 │   │   │   ├── SPARQLExecutor.java         # Jena SPARQL engine
 │   │   │   └── QueryTemplates.java         # six SPARQL templates
 │   │   ├── search/
-│   │   │   ├── SearchController.java       # semantic routing
-│   │   │   └── EntityResolver.java         # genre / free-text heuristic
+│   │   │   └── SearchController.java       # genre detection + query routing
 │   │   ├── model/
-│   │   │   ├── Movie.java | Person.java | SearchResult.java
+│   │   │   └── SearchResult.java           # row returned to the UI
 │   │   └── ui/
-│   │       ├── MainWindow.java             # 900x650 frame, BorderLayout
-│   │       ├── SearchPanel.java            # search bar
-│   │       ├── ResultsPanel.java           # scrollable vertical list
-│   │       └── MovieListItem.java          # single title row, hover + click
+│   │       ├── Theme.java                  # colors + fonts
+│   │       ├── MainWindow.java             # 960x700 frame, BorderLayout
+│   │       ├── SearchPanel.java            # rounded bar + realtime search
+│   │       ├── ResultsPanel.java           # CardLayout (list / centered placeholder)
+│   │       └── MovieListItem.java          # badge + title + subtitle card
 │   └── resources/ontology/
-│       ├── movies.owl                      # 32 movies, classes, restrictions
-│       └── rules.swrl                      # human-readable rule copy
+│       └── movies.owl                      # 32 movies, classes, restrictions
 ```
 
 ---

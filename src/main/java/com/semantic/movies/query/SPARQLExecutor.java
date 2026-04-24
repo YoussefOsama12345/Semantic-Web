@@ -33,7 +33,7 @@ public class SPARQLExecutor {
     }
 
     private List<SearchResult> select(String sparql) {
-        List<SearchResult> out = new ArrayList<>();
+        java.util.LinkedHashMap<String, SearchResult> byUri = new java.util.LinkedHashMap<>();
         Query query = QueryFactory.create(sparql);
         try (QueryExecution qe = QueryExecutionFactory.create(query, model)) {
             ResultSet rs = qe.execSelect();
@@ -41,10 +41,19 @@ public class SPARQLExecutor {
                 QuerySolution sol = rs.nextSolution();
                 String uri = sol.contains("movie") ? sol.getResource("movie").getURI() : "";
                 String title = sol.contains("title") ? sol.getLiteral("title").getString() : uri;
-                out.add(new SearchResult(uri, title));
+                SearchResult r = byUri.computeIfAbsent(uri, u -> new SearchResult(u, title));
+                if (r.getYear() == null && sol.contains("year")) {
+                    r.setYear(sol.getLiteral("year").getLexicalForm());
+                }
+                if (r.getDirector() == null && sol.contains("directorName")) {
+                    r.setDirector(sol.getLiteral("directorName").getString());
+                }
+                if (r.getGenre() == null && sol.contains("genreLabel")) {
+                    r.setGenre(sol.getLiteral("genreLabel").getString());
+                }
             }
         }
-        return out;
+        return new ArrayList<>(byUri.values());
     }
 
     private static String escape(String input) {

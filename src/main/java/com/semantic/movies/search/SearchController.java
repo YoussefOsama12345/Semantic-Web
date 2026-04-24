@@ -11,8 +11,12 @@ import java.util.Map;
 
 public class SearchController {
 
+    private static final String[] GENRES = {
+            "action", "drama", "comedy", "thriller", "sci-fi", "scifi",
+            "horror", "romance", "animation"
+    };
+
     private final SPARQLExecutor sparql;
-    private final EntityResolver resolver = new EntityResolver();
 
     public SearchController(SPARQLExecutor sparql) {
         this.sparql = sparql;
@@ -22,11 +26,9 @@ public class SearchController {
         if (userQuery == null || userQuery.isBlank()) return List.of();
 
         String q = userQuery.trim();
-        EntityResolver.EntityType type = resolver.resolve(q);
-
         Map<String, String> params = Map.of("query", q);
 
-        if (type == EntityResolver.EntityType.GENRE) {
+        if (isGenre(q)) {
             List<SearchResult> byGenre = sparql.runTemplate(QueryTemplates.Q_BY_GENRE, params);
             if (!byGenre.isEmpty()) return byGenre;
         }
@@ -50,5 +52,13 @@ public class SearchController {
 
     private static void addAll(Map<String, SearchResult> into, List<SearchResult> rows) {
         for (SearchResult r : rows) into.putIfAbsent(r.getUri(), r);
+    }
+
+    private static boolean isGenre(String query) {
+        String q = query.toLowerCase();
+        for (String g : GENRES) {
+            if (q.contains(g)) return true;
+        }
+        return false;
     }
 }
