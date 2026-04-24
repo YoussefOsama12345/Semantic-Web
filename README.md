@@ -76,7 +76,7 @@ java -jar target/movie-recommender-1.0.0.jar
 │   │       ├── ResultsPanel.java           # CardLayout (list / centered placeholder)
 │   │       └── MovieListItem.java          # badge + title + subtitle card
 │   └── resources/ontology/
-│       └── movies.owl                      # 32 movies, classes, restrictions
+│       └── movies.ttl                      # 32 movies, classes, restrictions (Turtle)
 ```
 
 ---
@@ -130,7 +130,7 @@ The UI uses six templates defined in `QueryTemplates.java`:
 
 ## How the system works
 
-1. `OntologyManager` loads `movies.owl` with the OWL API.
+1. `OntologyManager` loads `movies.ttl` (Turtle) with the OWL API.
 2. `ReasoningEngine` adds the 4 SWRL rules as `SWRLRule` axioms and runs
    **HermiT**, which natively supports DL-safe rules.
 3. The inferred axioms (including all `similarTo` and `MasterpieceMovie`

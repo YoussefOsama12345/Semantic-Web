@@ -21,13 +21,13 @@ public final class Main {
 
         try {
             OntologyManager ontology = new OntologyManager();
-            ontology.loadOntology("/ontology/movies.owl");
+            ontology.loadOntology("/ontology/movies.ttl");
 
             ReasoningEngine reasoner = new ReasoningEngine(ontology);
             reasoner.loadSwrlRules();
             reasoner.runReasoning();
 
-            String inferredPath = "movies-inferred.owl";
+            String inferredPath = "target/movies-inferred.owl";
             ontology.saveInferred(inferredPath, reasoner);
 
             SPARQLExecutor sparql = new SPARQLExecutor(inferredPath);

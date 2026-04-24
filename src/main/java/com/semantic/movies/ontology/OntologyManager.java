@@ -43,6 +43,8 @@ public class OntologyManager {
         iog.fillOntology(manager.getOWLDataFactory(), ontology);
 
         File out = new File(outputPath);
+        File parent = out.getParentFile();
+        if (parent != null && !parent.exists()) parent.mkdirs();
         manager.saveOntology(ontology, new RDFXMLDocumentFormat(), IRI.create(out.toURI()));
         System.out.println("[OntologyManager] Inferred ontology saved to: " + out.getAbsolutePath());
     }
