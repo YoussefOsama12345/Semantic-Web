@@ -78,7 +78,6 @@ movie-recommender/
 │   └── resources/ontology/
 │       ├── movies.owl                      # 32 movies, classes, restrictions
 │       └── rules.swrl                      # human-readable rule copy
-└── docs/queries/sample_queries.sparql
 ```
 
 ---
@@ -127,9 +126,6 @@ The UI uses six templates defined in `QueryTemplates.java`:
 - **Q4** – movies by genre label
 - **Q5** – similar movies (uses SWRL `similarTo` inferences)
 - **Q6** – `MasterpieceMovie` individuals (uses OWL + SWRL reasoning)
-
-Additional experimental queries (classics, acclaimed, frequent collaborators)
-live in `docs/queries/sample_queries.sparql`.
 
 ---
 
