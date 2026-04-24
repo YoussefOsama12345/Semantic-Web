@@ -2,7 +2,6 @@ package com.semantic.movies.model;
 
 import java.util.Objects;
 
-/** A single search result row - just a URI and a display title. */
 public class SearchResult {
     private final String uri;
     private final String title;

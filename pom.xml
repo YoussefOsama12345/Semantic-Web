@@ -21,21 +21,18 @@
     </properties>
 
     <dependencies>
-        <!-- OWL API for ontology manipulation -->
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>
             <artifactId>owlapi-distribution</artifactId>
             <version>5.5.0</version>
         </dependency>
 
-        <!-- HermiT reasoner -->
         <dependency>
             <groupId>net.sourceforge.owlapi</groupId>
             <artifactId>org.semanticweb.hermit</artifactId>
             <version>1.4.5.519</version>
         </dependency>
 
-        <!-- Apache Jena for SPARQL queries -->
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
@@ -43,14 +40,12 @@
             <type>pom</type>
         </dependency>
 
-        <!-- SWRLAPI for SWRL rule support -->
         <dependency>
             <groupId>edu.stanford.swrl</groupId>
             <artifactId>swrlapi</artifactId>
             <version>2.1.0</version>
         </dependency>
 
-        <!-- SLF4J binding to silence Jena warnings -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>

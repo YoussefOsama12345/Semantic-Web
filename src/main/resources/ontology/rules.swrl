@@ -1,40 +1,17 @@
-# SWRL Rules for the Movie Recommendation Ontology
-# Prefix: mov: <http://www.semanticweb.org/movies#>
-#
-# These rules are documented here in human-readable form.
-# They are loaded and registered programmatically by ReasoningEngine.java
-# using the SWRLAPI on top of HermiT.
 
-# -----------------------------------------------------------------------------
-# Rule 1: Similar by Director
-# Two distinct movies sharing the same director are similar.
-# -----------------------------------------------------------------------------
 Movie(?m1) ^ Movie(?m2) ^ hasDirector(?m1, ?d) ^ hasDirector(?m2, ?d)
     ^ differentFrom(?m1, ?m2)
     -> similarTo(?m1, ?m2)
 
-# -----------------------------------------------------------------------------
-# Rule 2: Similar by Genre and High Rating
-# Two highly-rated movies (rating > 8.0) of the same genre are similar.
-# -----------------------------------------------------------------------------
 Movie(?m1) ^ Movie(?m2) ^ belongsToGenre(?m1, ?g) ^ belongsToGenre(?m2, ?g)
     ^ imdbRating(?m1, ?r1) ^ imdbRating(?m2, ?r2)
     ^ swrlb:greaterThan(?r1, 8.0) ^ swrlb:greaterThan(?r2, 8.0)
     ^ differentFrom(?m1, ?m2)
     -> similarTo(?m1, ?m2)
 
-# -----------------------------------------------------------------------------
-# Rule 3: Must-Watch Classification (Masterpiece by rating)
-# Any movie with rating > 9.0 is a Masterpiece.
-# -----------------------------------------------------------------------------
 Movie(?m) ^ imdbRating(?m, ?r) ^ swrlb:greaterThan(?r, 9.0)
     -> MasterpieceMovie(?m)
 
-# -----------------------------------------------------------------------------
-# Rule 4: Frequent Collaborator detection
-# An actor and a director who worked together on two or more distinct movies
-# are frequent collaborators.
-# -----------------------------------------------------------------------------
 Actor(?a) ^ Director(?d) ^ Movie(?m1) ^ Movie(?m2)
     ^ hasActor(?m1, ?a) ^ hasDirector(?m1, ?d)
     ^ hasActor(?m2, ?a) ^ hasDirector(?m2, ?d)

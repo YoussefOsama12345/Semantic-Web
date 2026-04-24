@@ -16,10 +16,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Wraps the OWL API. Responsible for loading the base ontology and for
- * exporting a materialised (inferred) copy that Jena can query.
- */
 public class OntologyManager {
 
     public static final String NAMESPACE = "http://www.semanticweb.org/movies#";
@@ -30,9 +26,6 @@ public class OntologyManager {
     public OWLOntology getOntology() { return ontology; }
     public OWLOntologyManager getManager() { return manager; }
 
-    /**
-     * Load the ontology from a classpath resource (e.g. "/ontology/movies.owl").
-     */
     public void loadOntology(String classpathResource) throws OWLOntologyCreationException {
         InputStream in = getClass().getResourceAsStream(classpathResource);
         if (in == null) {
@@ -42,10 +35,6 @@ public class OntologyManager {
         this.ontology = manager.loadOntologyFromOntologyDocument(in);
     }
 
-    /**
-     * Materialise inferences and save the enriched ontology to disk in RDF/XML,
-     * so it can be re-read by Apache Jena for SPARQL.
-     */
     public void saveInferred(String outputPath, ReasoningEngine engine) throws Exception {
         OWLReasoner reasoner = engine.getReasoner();
         reasoner.precomputeInferences(

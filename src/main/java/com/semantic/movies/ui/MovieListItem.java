@@ -10,11 +10,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
 
-/**
- * A single row in the results list. Shows only the movie title, with hover
- * and click interactions. Intentionally text-only: no posters, no ratings,
- * no year, no genre.
- */
 public class MovieListItem extends JPanel {
 
     private static final Color HOVER_BG  = new Color(0xE3F2FD);

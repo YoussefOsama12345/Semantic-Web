@@ -8,9 +8,6 @@ import java.awt.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-/**
- * Top-level window. Hosts the search panel, results panel and a status bar.
- */
 public class MainWindow extends JFrame {
 
     private final SearchController searchController;
@@ -43,7 +40,6 @@ public class MainWindow extends JFrame {
         add(statusBar, BorderLayout.SOUTH);
     }
 
-    /** Callback invoked by the search panel when the user runs a search. */
     private void onSearch(String query) {
         setStatus("Searching...");
         resultsPanel.showLoading();
@@ -67,7 +63,6 @@ public class MainWindow extends JFrame {
         }.execute();
     }
 
-    /** Callback when a movie title in the list is clicked - show similar movies. */
     private void onMovieClicked(SearchResult clicked) {
         setStatus("Loading movies similar to \"" + clicked.getTitle() + "\"...");
         resultsPanel.showLoading();

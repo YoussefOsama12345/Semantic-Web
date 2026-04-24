@@ -1,6 +1,5 @@
 package com.semantic.movies.model;
 
-/** Minimal POJO for a movie. */
 public class Movie {
     private final String uri;
     private final String title;

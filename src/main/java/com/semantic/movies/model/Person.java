@@ -1,6 +1,5 @@
 package com.semantic.movies.model;
 
-/** Minimal POJO for a person (actor / director / writer). */
 public class Person {
     private final String uri;
     private final String fullName;

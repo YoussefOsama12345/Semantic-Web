@@ -10,10 +10,6 @@
 <http://www.semanticweb.org/movies> a owl:Ontology ;
     rdfs:comment "Semantic Movie Recommendation Ontology" .
 
-#################################################################
-# Classes
-#################################################################
-
 mov:Movie a owl:Class .
 mov:ActionMovie    a owl:Class ; rdfs:subClassOf mov:Movie .
 mov:DramaMovie     a owl:Class ; rdfs:subClassOf mov:Movie .
@@ -37,10 +33,6 @@ mov:GoldenGlobeAward   a owl:Class ; rdfs:subClassOf mov:Award .
 mov:CannesAward        a owl:Class ; rdfs:subClassOf mov:Award .
 mov:ProductionCompany  a owl:Class .
 mov:Country            a owl:Class .
-
-#################################################################
-# Object Properties
-#################################################################
 
 mov:hasCastMember a owl:ObjectProperty ;
     rdfs:domain mov:Movie ; rdfs:range mov:Person .
@@ -83,10 +75,6 @@ mov:directed a owl:ObjectProperty ;
 mov:frequentCollaborator a owl:ObjectProperty ;
     rdfs:domain mov:Person ; rdfs:range mov:Person .
 
-#################################################################
-# Data Properties
-#################################################################
-
 mov:title       a owl:DatatypeProperty ; rdfs:domain mov:Movie  ; rdfs:range xsd:string .
 mov:releaseYear a owl:DatatypeProperty ; rdfs:domain mov:Movie  ; rdfs:range xsd:int .
 mov:duration    a owl:DatatypeProperty ; rdfs:domain mov:Movie  ; rdfs:range xsd:int .
@@ -96,18 +84,12 @@ mov:fullName    a owl:DatatypeProperty ; rdfs:domain mov:Person ; rdfs:range xsd
 mov:birthYear   a owl:DatatypeProperty ; rdfs:domain mov:Person ; rdfs:range xsd:int .
 mov:nationality a owl:DatatypeProperty ; rdfs:domain mov:Person ; rdfs:range xsd:string .
 
-#################################################################
-# Defined classes (OWL restrictions)
-#################################################################
-
-# Every movie must have at least one director
 mov:Movie rdfs:subClassOf [
     a owl:Restriction ;
     owl:onProperty mov:hasDirector ;
     owl:someValuesFrom mov:Director
 ] .
 
-# A ClassicMovie is a movie released before 1980
 mov:ClassicMovie a owl:Class ;
     owl:equivalentClass [
         a owl:Class ;
@@ -124,7 +106,6 @@ mov:ClassicMovie a owl:Class ;
         )
     ] .
 
-# An AcclaimedMovie is a movie that won an Oscar
 mov:AcclaimedMovie a owl:Class ;
     owl:equivalentClass [
         a owl:Class ;
@@ -136,7 +117,6 @@ mov:AcclaimedMovie a owl:Class ;
         )
     ] .
 
-# A MasterpieceMovie has rating >= 8.5 AND won an award
 mov:MasterpieceMovie a owl:Class ;
     owl:equivalentClass [
         a owl:Class ;
@@ -156,10 +136,6 @@ mov:MasterpieceMovie a owl:Class ;
         )
     ] .
 
-#################################################################
-# Genre individuals
-#################################################################
-
 mov:Genre_Action    a mov:Genre ; rdfs:label "Action" .
 mov:Genre_Drama     a mov:Genre ; rdfs:label "Drama" .
 mov:Genre_Comedy    a mov:Genre ; rdfs:label "Comedy" .
@@ -168,10 +144,6 @@ mov:Genre_SciFi     a mov:Genre ; rdfs:label "Sci-Fi" .
 mov:Genre_Horror    a mov:Genre ; rdfs:label "Horror" .
 mov:Genre_Romance   a mov:Genre ; rdfs:label "Romance" .
 mov:Genre_Animation a mov:Genre ; rdfs:label "Animation" .
-
-#################################################################
-# Directors
-#################################################################
 
 mov:ChristopherNolan  a mov:Director ; mov:fullName "Christopher Nolan"   ; mov:nationality "British"  ; mov:birthYear 1970 .
 mov:FrancisFordCoppola a mov:Director ; mov:fullName "Francis Ford Coppola"; mov:nationality "American" ; mov:birthYear 1939 .
@@ -195,10 +167,6 @@ mov:JohnLasseter      a mov:Director ; mov:fullName "John Lasseter"       ; mov:
 mov:HayaoMiyazaki     a mov:Director ; mov:fullName "Hayao Miyazaki"      ; mov:nationality "Japanese" ; mov:birthYear 1941 .
 mov:ToddPhillips      a mov:Director ; mov:fullName "Todd Phillips"       ; mov:nationality "American" ; mov:birthYear 1970 .
 mov:DamienChazelle    a mov:Director ; mov:fullName "Damien Chazelle"     ; mov:nationality "American" ; mov:birthYear 1985 .
-
-#################################################################
-# Actors
-#################################################################
 
 mov:LeonardoDiCaprio   a mov:Actor ; mov:fullName "Leonardo DiCaprio"     ; mov:nationality "American" ; mov:birthYear 1974 .
 mov:JosephGordonLevitt a mov:Actor ; mov:fullName "Joseph Gordon-Levitt"  ; mov:nationality "American" ; mov:birthYear 1981 .
@@ -286,10 +254,6 @@ mov:PaulReiser         a mov:Actor ; mov:fullName "Paul Reiser"           ; mov:
 mov:JonahHill          a mov:Actor ; mov:fullName "Jonah Hill"            ; mov:nationality "American" ; mov:birthYear 1983 .
 mov:MargotRobbie       a mov:Actor ; mov:fullName "Margot Robbie"         ; mov:nationality "Australian"; mov:birthYear 1990 .
 
-#################################################################
-# Award individuals (one per winning movie)
-#################################################################
-
 mov:Oscar_Inception     a mov:OscarAward ; rdfs:label "Oscar - Inception" .
 mov:Oscar_Godfather     a mov:OscarAward ; rdfs:label "Oscar - The Godfather" .
 mov:Oscar_PulpFiction   a mov:OscarAward ; rdfs:label "Oscar - Pulp Fiction" .
@@ -316,10 +280,6 @@ mov:Oscar_SpiritedAway  a mov:OscarAward ; rdfs:label "Oscar - Spirited Away" .
 mov:Oscar_Joker         a mov:OscarAward ; rdfs:label "Oscar - Joker" .
 mov:Oscar_Whiplash      a mov:OscarAward ; rdfs:label "Oscar - Whiplash" .
 mov:Oscar_Shawshank     a mov:OscarAward ; rdfs:label "Oscar - Shawshank Redemption (nom)" .
-
-#################################################################
-# Movies
-#################################################################
 
 mov:Inception_2010 a mov:SciFiMovie ;
     mov:title "Inception" ; mov:releaseYear 2010 ; mov:duration 148 ; mov:imdbRating "8.8"^^xsd:double ;

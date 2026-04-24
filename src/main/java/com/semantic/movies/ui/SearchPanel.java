@@ -7,9 +7,6 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.util.function.Consumer;
 
-/**
- * Top search bar - a large text field, a search button and a clear button.
- */
 public class SearchPanel extends JPanel {
 
     private static final String PLACEHOLDER = "Search by movie, actor, director, or genre...";
@@ -29,7 +26,7 @@ public class SearchPanel extends JPanel {
                 BorderFactory.createLineBorder(new Color(0xCCCCCC), 1),
                 new EmptyBorder(8, 12, 8, 12)));
         installPlaceholder();
-        searchField.addActionListener(e -> fireSearch()); // Enter key
+        searchField.addActionListener(e -> fireSearch());
 
         JButton searchBtn = new JButton("Search");
         searchBtn.setFont(searchBtn.getFont().deriveFont(Font.BOLD));

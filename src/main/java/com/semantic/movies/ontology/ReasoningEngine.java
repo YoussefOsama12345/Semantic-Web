@@ -9,11 +9,6 @@ import org.semanticweb.owlapi.vocab.OWL2Datatype;
 
 import java.util.Arrays;
 
-/**
- * Wraps HermiT and the SWRL rules. HermiT natively supports DL-safe SWRL rules
- * added directly to the ontology as SWRLRule axioms. That is what we do here
- * so we do not need a separate rule engine.
- */
 public class ReasoningEngine {
 
     private final OntologyManager ontologyManager;
@@ -27,16 +22,11 @@ public class ReasoningEngine {
 
     public OWLReasoner getReasoner() { return reasoner; }
 
-    /**
-     * Register the 4 SWRL rules described in rules.swrl as SWRLRule axioms
-     * directly on the ontology. They are DL-safe so HermiT handles them.
-     */
     public void loadSwrlRules() {
         OWLOntology ont = ontologyManager.getOntology();
         OWLOntologyManager mgr = ontologyManager.getManager();
         String ns = OntologyManager.NAMESPACE;
 
-        // Shared entities
         OWLClass movie       = df.getOWLClass(IRI.create(ns + "Movie"));
         OWLClass actor       = df.getOWLClass(IRI.create(ns + "Actor"));
         OWLClass director    = df.getOWLClass(IRI.create(ns + "Director"));
@@ -50,7 +40,6 @@ public class ReasoningEngine {
 
         OWLDataProperty rating = df.getOWLDataProperty(IRI.create(ns + "imdbRating"));
 
-        // Variables
         SWRLVariable m1 = df.getSWRLVariable(IRI.create(ns + "m1"));
         SWRLVariable m2 = df.getSWRLVariable(IRI.create(ns + "m2"));
         SWRLVariable m  = df.getSWRLVariable(IRI.create(ns + "m"));
@@ -61,7 +50,6 @@ public class ReasoningEngine {
         SWRLVariable r1 = df.getSWRLVariable(IRI.create(ns + "r1"));
         SWRLVariable r2 = df.getSWRLVariable(IRI.create(ns + "r2"));
 
-        // ---- Rule 1: same director -> similarTo ----
         SWRLRule rule1 = df.getSWRLRule(
                 Arrays.asList(
                         df.getSWRLClassAtom(movie, m1),
@@ -72,7 +60,6 @@ public class ReasoningEngine {
                 Arrays.asList(df.getSWRLObjectPropertyAtom(similarTo, m1, m2)));
         mgr.addAxiom(ont, rule1);
 
-        // ---- Rule 2: same genre AND both ratings > 8.0 -> similarTo ----
         SWRLLiteralArgument eight = df.getSWRLLiteralArgument(
                 df.getOWLLiteral("8.0", OWL2Datatype.XSD_DOUBLE));
         SWRLRule rule2 = df.getSWRLRule(
@@ -91,7 +78,6 @@ public class ReasoningEngine {
                 Arrays.asList(df.getSWRLObjectPropertyAtom(similarTo, m1, m2)));
         mgr.addAxiom(ont, rule2);
 
-        // ---- Rule 3: rating > 9.0 -> MasterpieceMovie ----
         SWRLLiteralArgument nine = df.getSWRLLiteralArgument(
                 df.getOWLLiteral("9.0", OWL2Datatype.XSD_DOUBLE));
         SWRLRule rule3 = df.getSWRLRule(
@@ -103,7 +89,6 @@ public class ReasoningEngine {
                 Arrays.asList(df.getSWRLClassAtom(masterpiece, m)));
         mgr.addAxiom(ont, rule3);
 
-        // ---- Rule 4: shared actor+director on 2+ movies -> frequentCollaborator ----
         SWRLRule rule4 = df.getSWRLRule(
                 Arrays.asList(
                         df.getSWRLClassAtom(actor, a),
@@ -121,9 +106,6 @@ public class ReasoningEngine {
         System.out.println("[ReasoningEngine] Registered 4 SWRL rules.");
     }
 
-    /**
-     * Run HermiT reasoning over the ontology.
-     */
     public void runReasoning() {
         OWLReasonerFactory factory = new ReasonerFactory();
         this.reasoner = factory.createReasoner(ontologyManager.getOntology());

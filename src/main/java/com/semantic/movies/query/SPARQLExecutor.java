@@ -14,9 +14,6 @@ import org.apache.jena.riot.RDFDataMgr;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Runs SPARQL queries against the inferred ontology file using Apache Jena.
- */
 public class SPARQLExecutor {
 
     private final Model model;
@@ -27,7 +24,6 @@ public class SPARQLExecutor {
         System.out.println("[SPARQLExecutor] Loaded inferred model, triples=" + model.size());
     }
 
-    /** Replace ${key} placeholders, then run a SELECT query. */
     public List<SearchResult> runTemplate(String template, java.util.Map<String, String> params) {
         String sparql = template;
         for (var e : params.entrySet()) {
@@ -52,7 +48,6 @@ public class SPARQLExecutor {
     }
 
     private static String escape(String input) {
-        // Escape quotes and backslashes for SPARQL literals.
         return input == null ? "" : input.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }

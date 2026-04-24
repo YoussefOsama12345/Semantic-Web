@@ -8,9 +8,6 @@ import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
 
-/**
- * Scrollable vertical list of MovieListItem rows.
- */
 public class ResultsPanel extends JPanel {
 
     private final JPanel listPanel = new JPanel();
@@ -49,7 +46,6 @@ public class ResultsPanel extends JPanel {
             item.setAlignmentX(Component.LEFT_ALIGNMENT);
             listPanel.add(item);
         }
-        // Filler keeps items top-aligned when there are only a few.
         listPanel.add(Box.createVerticalGlue());
         listPanel.revalidate();
         listPanel.repaint();
