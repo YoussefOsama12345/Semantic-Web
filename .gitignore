@@ -1,0 +1,21 @@
+# Build output
+target/
+*.class
+
+# Inferred ontology generated at runtime
+movies-inferred.owl
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.project
+.classpath
+.settings/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
