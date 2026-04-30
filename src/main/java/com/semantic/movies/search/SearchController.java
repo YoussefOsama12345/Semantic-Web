@@ -50,6 +50,10 @@ public class SearchController {
         return sparql.runTemplate(QueryTemplates.Q_MASTERPIECES, Map.of());
     }
 
+    public List<SearchResult> findAcclaimed() {
+        return sparql.runTemplate(QueryTemplates.Q_ACCLAIMED, Map.of());
+    }
+
     private static void addAll(Map<String, SearchResult> into, List<SearchResult> rows) {
         for (SearchResult r : rows) into.putIfAbsent(r.getUri(), r);
     }
