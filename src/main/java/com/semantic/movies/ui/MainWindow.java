@@ -30,8 +30,8 @@ public class MainWindow extends JFrame {
         this.searchController = searchController;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1100, 760);
-        setMinimumSize(new Dimension(820, 540));
+        setSize(1000, 720);
+        setMinimumSize(new Dimension(720, 480));
         setLocationRelativeTo(null);
         getContentPane().setBackground(Theme.BG);
         setLayout(new BorderLayout());
@@ -44,19 +44,10 @@ public class MainWindow extends JFrame {
         cardHost.add(buildSearchCard(), CARD_SEARCH);
         cardHost.add(detailPanel,       CARD_DETAIL);
 
-        add(buildHeader(), BorderLayout.NORTH);
-        add(cardHost,      BorderLayout.CENTER);
-        add(statusBar,     BorderLayout.SOUTH);
+        add(cardHost,  BorderLayout.CENTER);
+        add(statusBar, BorderLayout.SOUTH);
 
         cards.show(cardHost, CARD_SEARCH);
-    }
-
-    private JPanel buildHeader() {
-        return new HeaderBar(
-                this::onAll,
-                this::onAcclaimed,
-                this::onMasterpieces,
-                this::onGenre);
     }
 
     private JPanel buildSearchCard() {
@@ -91,40 +82,6 @@ public class MainWindow extends JFrame {
                 () -> searchController.search(query),
                 results -> setStatus(results.size() + " result" + (results.size() == 1 ? "" : "s")
                         + " for \"" + query + "\""));
-    }
-
-    private void onAll() {
-        setStatus("Loading all movies...");
-        runAsync(
-                () -> searchController.findAll(),
-                results -> setStatus(results.size() + " movie" + (results.size() == 1 ? "" : "s")
-                        + " in catalogue"));
-    }
-
-    private void onAcclaimed() {
-        setStatus("Loading acclaimed movies...");
-        runAsync(
-                () -> searchController.findAcclaimed(),
-                results -> setStatus(results.isEmpty()
-                        ? "No acclaimed movies found."
-                        : results.size() + " acclaimed movie" + (results.size() == 1 ? "" : "s")));
-    }
-
-    private void onMasterpieces() {
-        setStatus("Loading masterpieces...");
-        runAsync(
-                () -> searchController.findMasterpieces(),
-                results -> setStatus(results.isEmpty()
-                        ? "No masterpieces found."
-                        : results.size() + " masterpiece" + (results.size() == 1 ? "" : "s")));
-    }
-
-    private void onGenre(String genre) {
-        setStatus("Loading " + genre + " movies...");
-        runAsync(
-                () -> searchController.search(genre),
-                results -> setStatus(results.size() + " " + genre + " movie"
-                        + (results.size() == 1 ? "" : "s")));
     }
 
     private void onMovieClicked(SearchResult clicked) {
