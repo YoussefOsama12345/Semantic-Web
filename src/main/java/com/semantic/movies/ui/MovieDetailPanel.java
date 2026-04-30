@@ -31,22 +31,21 @@ public class MovieDetailPanel extends JPanel {
 
     private void styleComponents() {
         badgeLabel.setOpaque(true);
-        badgeLabel.setBackground(Theme.ACCENT_SOFT);
-        badgeLabel.setForeground(Theme.PRIMARY);
-        badgeLabel.setFont(new Font("SansSerif", Font.BOLD, 36));
+        badgeLabel.setBackground(Theme.GOLD_SOFT);
+        badgeLabel.setForeground(Theme.GOLD);
+        badgeLabel.setFont(new Font("Serif", Font.BOLD, 36));
         badgeLabel.setPreferredSize(new Dimension(96, 96));
         badgeLabel.setMaximumSize(new Dimension(96, 96));
         badgeLabel.setMinimumSize(new Dimension(96, 96));
-        badgeLabel.setBorder(BorderFactory.createLineBorder(Theme.PRIMARY, 2, true));
 
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 26));
+        titleLabel.setFont(new Font("Serif", Font.BOLD, 30));
         titleLabel.setForeground(Theme.TEXT_PRIMARY);
 
         metaLabel.setFont(Theme.FONT_SUBTITLE);
         metaLabel.setForeground(Theme.TEXT_SECONDARY);
 
         ratingLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
-        ratingLabel.setForeground(Theme.PRIMARY);
+        ratingLabel.setForeground(Theme.GOLD);
 
         durLabel.setFont(Theme.FONT_SUBTITLE);
         durLabel.setForeground(Theme.TEXT_MUTED);
@@ -63,15 +62,15 @@ public class MovieDetailPanel extends JPanel {
 
     private JPanel buildTopBar() {
         JPanel bar = new JPanel(new BorderLayout());
-        bar.setBackground(Theme.SIDEBAR_BG);
+        bar.setBackground(Theme.HEADER_BG);
         bar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER),
-                new EmptyBorder(14, 22, 14, 22)));
+                new EmptyBorder(16, 36, 16, 36)));
 
         JButton back = new JButton("←  Back");
-        back.setFont(new Font("SansSerif", Font.BOLD, 13));
+        back.setFont(Theme.FONT_PILL);
         back.setForeground(Color.WHITE);
-        back.setBackground(Theme.ACCENT_RED);
+        back.setBackground(Theme.PRIMARY);
         back.setOpaque(true);
         back.setBorder(new EmptyBorder(8, 18, 8, 18));
         back.setBorderPainted(false);
@@ -87,14 +86,14 @@ public class MovieDetailPanel extends JPanel {
         JPanel body = new JPanel();
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
         body.setBackground(Theme.BG);
-        body.setBorder(new EmptyBorder(32, 40, 32, 40));
+        body.setBorder(new EmptyBorder(36, 48, 36, 48));
 
         body.add(buildHeaderRow());
-        body.add(Box.createVerticalStrut(24));
-        body.add(buildRatingRow());
         body.add(Box.createVerticalStrut(28));
+        body.add(buildRatingRow());
+        body.add(Box.createVerticalStrut(32));
         body.add(buildSectionLabel("PLOT"));
-        body.add(Box.createVerticalStrut(10));
+        body.add(Box.createVerticalStrut(12));
         plotArea.setAlignmentX(Component.LEFT_ALIGNMENT);
         body.add(plotArea);
         body.add(Box.createVerticalGlue());
@@ -115,7 +114,7 @@ public class MovieDetailPanel extends JPanel {
         row.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         row.add(badgeLabel);
-        row.add(Box.createHorizontalStrut(24));
+        row.add(Box.createHorizontalStrut(28));
 
         JPanel text = new JPanel();
         text.setOpaque(false);
@@ -147,7 +146,7 @@ public class MovieDetailPanel extends JPanel {
     private JLabel buildSectionLabel(String text) {
         JLabel l = new JLabel(text);
         l.setFont(new Font("SansSerif", Font.BOLD, 11));
-        l.setForeground(Theme.PRIMARY);
+        l.setForeground(Theme.GOLD);
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
         return l;
     }

@@ -28,7 +28,7 @@ public class SearchPanel extends JPanel {
 
         setBackground(Theme.BG);
         setLayout(new BorderLayout());
-        setBorder(new EmptyBorder(22, 28, 18, 28));
+        setBorder(new EmptyBorder(28, 36, 20, 36));
 
         add(buildSearchBar(), BorderLayout.CENTER);
     }

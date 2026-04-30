@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 public class MainWindow extends JFrame {
 
-    private static final Color ERROR_COLOR = new Color(0xFF, 0x6B, 0x6B);
+    private static final Color ERROR_COLOR = new Color(0xB1, 0x2A, 0x2A);
 
     private static final String CARD_SEARCH = "search";
     private static final String CARD_DETAIL = "detail";
@@ -26,12 +26,12 @@ public class MainWindow extends JFrame {
     private final JPanel cardHost = new JPanel(cards);
 
     public MainWindow(SearchController searchController) {
-        super("Cinema — Semantic Movie Recommender");
+        super("Cinema");
         this.searchController = searchController;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1180, 760);
-        setMinimumSize(new Dimension(900, 540));
+        setSize(1100, 760);
+        setMinimumSize(new Dimension(820, 540));
         setLocationRelativeTo(null);
         getContentPane().setBackground(Theme.BG);
         setLayout(new BorderLayout());
@@ -44,17 +44,19 @@ public class MainWindow extends JFrame {
         cardHost.add(buildSearchCard(), CARD_SEARCH);
         cardHost.add(detailPanel,       CARD_DETAIL);
 
-        Sidebar sidebar = new Sidebar(
+        add(buildHeader(), BorderLayout.NORTH);
+        add(cardHost,      BorderLayout.CENTER);
+        add(statusBar,     BorderLayout.SOUTH);
+
+        cards.show(cardHost, CARD_SEARCH);
+    }
+
+    private JPanel buildHeader() {
+        return new HeaderBar(
                 this::onAll,
                 this::onAcclaimed,
                 this::onMasterpieces,
                 this::onGenre);
-
-        add(sidebar,   BorderLayout.WEST);
-        add(cardHost,  BorderLayout.CENTER);
-        add(statusBar, BorderLayout.SOUTH);
-
-        cards.show(cardHost, CARD_SEARCH);
     }
 
     private JPanel buildSearchCard() {
@@ -71,9 +73,9 @@ public class MainWindow extends JFrame {
         bar.setForeground(Theme.TEXT_MUTED);
         bar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.BORDER),
-                new EmptyBorder(8, 22, 8, 22)));
+                new EmptyBorder(8, 36, 8, 36)));
         bar.setOpaque(true);
-        bar.setBackground(Theme.SIDEBAR_BG);
+        bar.setBackground(Theme.HEADER_BG);
         bar.setPreferredSize(new Dimension(0, 30));
         return bar;
     }

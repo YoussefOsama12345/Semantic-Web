@@ -11,18 +11,19 @@ import java.util.function.Consumer;
 
 public class MovieListItem extends JPanel {
 
-    private static final int PAD_H = 6;
-    private static final int PAD_V = 4;
+    private static final int PAD_H = 8;
+    private static final int PAD_V = 5;
 
     private Color bg = Theme.CARD;
     private Color border = Theme.BORDER;
+    private boolean elevated = false;
 
     public MovieListItem(SearchResult result, Consumer<SearchResult> onClick) {
         setOpaque(false);
-        setLayout(new BorderLayout(16, 0));
-        setBorder(new EmptyBorder(PAD_V + 14, PAD_H + 18, PAD_V + 14, PAD_H + 18));
+        setLayout(new BorderLayout(18, 0));
+        setBorder(new EmptyBorder(PAD_V + 16, PAD_H + 22, PAD_V + 16, PAD_H + 22));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        setMaximumSize(new Dimension(Integer.MAX_VALUE, 92));
+        setMaximumSize(new Dimension(Integer.MAX_VALUE, 100));
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
         add(buildBadge(result.getTitle()), BorderLayout.WEST);
@@ -32,12 +33,14 @@ public class MovieListItem extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) {
                 bg = Theme.CARD_HOVER;
-                border = Theme.PRIMARY;
+                border = Theme.GOLD;
+                elevated = true;
                 repaint();
             }
             @Override public void mouseExited(MouseEvent e) {
                 bg = Theme.CARD;
                 border = Theme.BORDER;
+                elevated = false;
                 repaint();
             }
             @Override public void mouseClicked(MouseEvent e) { onClick.accept(result); }
@@ -48,21 +51,26 @@ public class MovieListItem extends JPanel {
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         int x = PAD_H, y = PAD_V, w = getWidth() - 2 * PAD_H, h = getHeight() - 2 * PAD_V;
+
+        // soft shadow when elevated
+        if (elevated) {
+            g2.setColor(new Color(0, 0, 0, 14));
+            g2.fillRoundRect(x + 1, y + 3, w, h, 14, 14);
+        }
         g2.setColor(bg);
-        g2.fillRoundRect(x, y, w, h, 10, 10);
+        g2.fillRoundRect(x, y, w, h, 14, 14);
         g2.setColor(border);
-        g2.drawRoundRect(x, y, w - 1, h - 1, 10, 10);
+        g2.drawRoundRect(x, y, w - 1, h - 1, 14, 14);
         g2.dispose();
     }
 
     private static JLabel buildBadge(String title) {
         JLabel badge = new JLabel(initials(title), SwingConstants.CENTER);
         badge.setOpaque(true);
-        badge.setBackground(Theme.ACCENT_SOFT);
-        badge.setForeground(Theme.PRIMARY);
-        badge.setFont(new Font("SansSerif", Font.BOLD, 16));
-        badge.setPreferredSize(new Dimension(48, 48));
-        badge.setBorder(BorderFactory.createLineBorder(Theme.PRIMARY, 1, true));
+        badge.setBackground(Theme.GOLD_SOFT);
+        badge.setForeground(Theme.GOLD);
+        badge.setFont(new Font("Serif", Font.BOLD, 17));
+        badge.setPreferredSize(new Dimension(50, 50));
         return badge;
     }
 
@@ -82,7 +90,7 @@ public class MovieListItem extends JPanel {
             JLabel subtitle = new JLabel(subtitleText);
             subtitle.setFont(Theme.FONT_SUBTITLE);
             subtitle.setForeground(Theme.TEXT_SECONDARY);
-            subtitle.setBorder(new EmptyBorder(4, 0, 0, 0));
+            subtitle.setBorder(new EmptyBorder(5, 0, 0, 0));
             subtitle.setAlignmentX(Component.LEFT_ALIGNMENT);
             text.add(subtitle);
         }
@@ -97,8 +105,8 @@ public class MovieListItem extends JPanel {
         String rating = result.getRatingLabel();
         if (!rating.isBlank()) {
             JLabel ratingLabel = new JLabel(rating);
-            ratingLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
-            ratingLabel.setForeground(Theme.PRIMARY);
+            ratingLabel.setFont(new Font("SansSerif", Font.BOLD, 14));
+            ratingLabel.setForeground(Theme.GOLD);
             ratingLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
             meta.add(ratingLabel);
         }
