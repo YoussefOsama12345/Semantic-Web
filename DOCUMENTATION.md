@@ -28,10 +28,10 @@ The system replaces keyword search with a Semantic-Web pipeline:
 
 # 3. Results
 
-- The inferred ontology contains all `similarTo` pairs and all `MasterpieceMovie` memberships derived by the rules and OWL definitions, none of them hand-written.
+- The inferred ontology contains all `MasterpieceMovie` and `AcclaimedMovie` memberships derived by the SWRL rules and OWL class-equivalence axioms — none of them hand-written.
 - Reasoning completes in under two seconds at startup.
 - Per-keystroke query latency is sub-second thanks to a 280 ms debounce and a preloaded model.
-- Six SPARQL templates (title, actor, director, genre, similar, masterpiece) return enriched rows with title, year, director, and genre.
+- Six SPARQL templates (title, actor, director, genre, masterpiece, acclaimed) return enriched rows with title, year, director, genre, IMDb rating, duration, and plot.
 - The ontology is verified logically consistent by HermiT on every launch.
 
 # 4. Real-World Impact
@@ -208,25 +208,25 @@ The ontology is populated with **thirty-two real-world movies** drawn from a bro
 
 ## 5.8 Rule Layer (SWRL)
 
-Four **SWRL rules** extend the purely terminological knowledge with rule-based entailments. All rules are DL-safe, which is the decidable fragment HermiT natively supports.
+A set of **SWRL rules** extends the purely terminological knowledge with rule-based entailments. The rules are authored directly inside Protégé (via the SWRLTab) and are stored in the OWL file as `swrl:Imp` axioms — the Java application never adds them programmatically. All rules are DL-safe, which is the decidable fragment HermiT natively supports.
 
-**Rule 1 — Similar by shared director**
+**Rule — Masterpiece by multiple awards**
 
-> If two distinct movies share the same director, they are similar to each other.
+> Any movie that won both an Oscar and a Cannes award is typed as a MasterpieceMovie.
 
-**Rule 2 — Similar by shared genre**
+**Rule — Acclaimed by Oscar**
 
-> If two distinct movies belong to the same genre, they are similar to each other.
+> Any movie that won at least one Oscar is typed as an AcclaimedMovie. (Also expressible as an OWL equivalent-class axiom; redundancy is intentional and lets the rule engine cross-validate the OWL definition.)
 
-**Rule 3 — Masterpiece classification**
+**Rule — Frequent collaborator**
 
-> Any movie that has a numeric rating and has won at least one award is typed as a MasterpieceMovie.
+> If the same actor and the same director appear together in two distinct movies, they are tagged as `frequentCollaborator` of one another.
 
-**Rule 4 — Frequent collaborator**
+**Rule — Similar by shared director / genre / award**
 
-> If the same actor and the same director both appear in at least two different movies, they are frequent collaborators.
+> Several SWRL rules derive `similarTo` between movies that share specific structural features (same director, same genre with comparable awards, etc.). The `similarTo` property is declared symmetric, so a single firing covers both directions.
 
-Without rules, relations such as `similarTo` and `frequentCollaborator` would have to be hand-asserted for every applicable pair, which does not scale. With rules, the knowledge base remains small and focused on primary facts, and the reasoner derives the secondary facts automatically.
+Without rules, relations such as `frequentCollaborator` and `MasterpieceMovie` membership would have to be hand-asserted for every applicable case, which does not scale. With rules, the ABox remains small and focused on primary facts and the reasoner derives the secondary facts automatically.
 
 ## 5.9 How the Project Was Built
 
@@ -244,16 +244,16 @@ For every relationship between classes we created an object property, and for ev
 **Phase 4 — Instance population.**
 We populated the ontology with thirty-two real-world films and the people, genres, and awards they relate to. Each individual was declared as a member of its primary class and connected to its neighbours through property assertions. The resulting ABox is intentionally compact: we relied on reasoning and rules to amplify it rather than entering every derived fact by hand.
 
-**Phase 5 — Programmatic integration.**
-We moved from Protégé into Java, using the OWL API to load the ontology, run a reasoner over it, and serialise the result. The reasoner of choice was HermiT, because of its OWL 2 DL completeness and its native support for DL-safe SWRL.
+**Phase 5 — Rule authoring inside Protégé.**
+SWRL rules were authored directly in Protégé using the SWRLTab. Each rule was tested against HermiT inside Protégé to verify that it fires on the right individuals and that the inferences are sound. Once validated, the rules became permanent `swrl:Imp` axioms in the ontology file itself.
 
-**Phase 6 — Rule-based extension.**
-Four SWRL rules were added to the system at runtime, encoding the recommendation logic directly in the reasoning layer instead of in imperative code. HermiT classifies the ontology together with the rules, enforces consistency, and produces every entailed axiom.
+**Phase 6 — Export and Java integration.**
+The completed ontology — classes, properties, individuals, OWL axioms, and SWRL rules — was exported from Protégé as a single **RDF/XML** file (`movies.owl`) and dropped into the Java project's classpath resources. The Java application uses the OWL API to load that file, HermiT (OWL 2 DL + DL-safe SWRL) to reason over it, and the inferred-axiom generators to materialise inferred subclass and class-assertion axioms into a derived file (`movies-inferred.owl`). The application contains zero ontology logic — every class, property, individual, and rule lives in `movies.owl`.
 
-**Phase 7 — Materialisation and query layer.**
-After classification, we materialised the inferred axioms into an enriched ontology file that contains both the original assertions and everything the reasoner derived from them. Apache Jena loads that enriched file as an RDF model, and a fixed library of parameterised SPARQL queries — covering search by title, by actor, by director, by genre, similarity, and masterpiece classification — serves the user interface. Because the queries run against the inferred model, the UI automatically benefits from the OWL definitions and the SWRL rules without any additional code.
+**Phase 7 — Query layer and UI.**
+Apache Jena loads the inferred file as an RDF model, and a fixed library of parameterised SPARQL queries — covering search by title, by actor, by director, by genre, masterpiece classification, and acclaimed classification — serves the user interface. The Swing GUI is a two-page navigation: a search page with a results list, and a full-page movie detail view with a back button. Because the queries run against the inferred model, the UI automatically benefits from the OWL definitions and the SWRL rules without any additional code.
 
-The end result is a system where **data, knowledge, and rules evolve independently of the application logic**. Adding a new movie, a new rule, or a new query never requires touching the user interface or the reasoning pipeline — which is precisely the promise of a Semantic Web solution.
+The end result is a system where **data, knowledge, and rules evolve independently of the application logic**. Adding a new movie, a new rule, or a new restriction is done in Protégé, exported, and immediately reflected in the application — which is precisely the promise of a Semantic Web solution.
 
 <div style="page-break-after: always;"></div>
 
