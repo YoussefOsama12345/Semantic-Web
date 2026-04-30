@@ -8,37 +8,54 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class MainWindow extends JFrame {
 
     private static final Color ERROR_COLOR = new Color(0xB91C1C);
 
+    private static final String CARD_SEARCH = "search";
+    private static final String CARD_DETAIL = "detail";
+
     private final SearchController searchController;
     private final ResultsPanel resultsPanel;
     private final MovieDetailPanel detailPanel;
     private final JLabel statusBar;
+    private final CardLayout cards = new CardLayout();
+    private final JPanel cardHost = new JPanel(cards);
 
     public MainWindow(SearchController searchController) {
         super("Semantic Movie Recommender");
         this.searchController = searchController;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1100, 700);
-        setMinimumSize(new Dimension(780, 480));
+        setSize(1000, 720);
+        setMinimumSize(new Dimension(720, 480));
         setLocationRelativeTo(null);
         getContentPane().setBackground(Theme.BG);
         setLayout(new BorderLayout());
 
         resultsPanel = new ResultsPanel(this::onMovieClicked);
-        detailPanel  = new MovieDetailPanel();
-        detailPanel.setVisible(false);
+        detailPanel  = new MovieDetailPanel(this::onBack, this::onMovieClicked);
         statusBar    = buildStatusBar();
 
-        add(buildTop(),   BorderLayout.NORTH);
-        add(resultsPanel, BorderLayout.CENTER);
-        add(detailPanel,  BorderLayout.EAST);
-        add(statusBar,    BorderLayout.SOUTH);
+        cardHost.setBackground(Theme.BG);
+        cardHost.add(buildSearchCard(), CARD_SEARCH);
+        cardHost.add(detailPanel,       CARD_DETAIL);
+
+        add(cardHost,  BorderLayout.CENTER);
+        add(statusBar, BorderLayout.SOUTH);
+
+        cards.show(cardHost, CARD_SEARCH);
+    }
+
+    private JPanel buildSearchCard() {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Theme.BG);
+        card.add(buildTop(),    BorderLayout.NORTH);
+        card.add(resultsPanel,  BorderLayout.CENTER);
+        return card;
     }
 
     private JPanel buildTop() {
@@ -63,7 +80,6 @@ public class MainWindow extends JFrame {
     }
 
     private void onSearch(String query) {
-        hideDetail();
         if (query == null || query.isBlank()) {
             resultsPanel.reset();
             setStatus("Ready");
@@ -77,7 +93,6 @@ public class MainWindow extends JFrame {
     }
 
     private void onAcclaimed() {
-        hideDetail();
         setStatus("Loading acclaimed movies...");
         runAsync(
                 () -> searchController.findAcclaimed(),
@@ -88,27 +103,34 @@ public class MainWindow extends JFrame {
 
     private void onMovieClicked(SearchResult clicked) {
         detailPanel.show(clicked);
-        if (!detailPanel.isVisible()) {
-            detailPanel.setVisible(true);
-            revalidate();
-        }
+        cards.show(cardHost, CARD_DETAIL);
         setStatus("Loading movies similar to \"" + clicked.getTitle() + "\"...");
-        runAsync(
-                () -> searchController.findSimilar(clicked.getTitle()),
-                similar -> setStatus(similar.isEmpty()
-                        ? "No similar movies found for \"" + clicked.getTitle() + "\""
-                        : "Showing movies similar to: " + clicked.getTitle()));
+
+        new SwingWorker<List<SearchResult>, Void>() {
+            @Override protected List<SearchResult> doInBackground() {
+                return searchController.findSimilar(clicked.getTitle());
+            }
+            @Override protected void done() {
+                try {
+                    List<SearchResult> similar = get();
+                    detailPanel.setSimilar(similar);
+                    setStatus(similar.isEmpty()
+                            ? "No similar movies for \"" + clicked.getTitle() + "\""
+                            : similar.size() + " similar movie" + (similar.size() == 1 ? "" : "s")
+                                    + " for \"" + clicked.getTitle() + "\"");
+                } catch (InterruptedException | ExecutionException ex) {
+                    setError(ex.getMessage());
+                }
+            }
+        }.execute();
     }
 
-    private void hideDetail() {
-        if (detailPanel.isVisible()) {
-            detailPanel.setVisible(false);
-            revalidate();
-        }
+    private void onBack() {
+        cards.show(cardHost, CARD_SEARCH);
+        setStatus("Ready");
     }
 
-    private void runAsync(Supplier<List<SearchResult>> task,
-                          java.util.function.Consumer<List<SearchResult>> onDone) {
+    private void runAsync(Supplier<List<SearchResult>> task, Consumer<List<SearchResult>> onDone) {
         resultsPanel.showLoading();
         new SwingWorker<List<SearchResult>, Void>() {
             @Override protected List<SearchResult> doInBackground() { return task.get(); }
