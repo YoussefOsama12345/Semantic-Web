@@ -9,12 +9,15 @@ public final class QueryTemplates {
             "PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>\n";
 
     private static final String SELECT_MOVIE_FIELDS =
-            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel WHERE {\n" +
+            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel ?rating ?duration ?plot WHERE {\n" +
             "  ?movie a mov:Movie ;\n" +
             "         mov:title ?title .\n" +
             "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
             "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
-            "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n";
+            "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n" +
+            "  OPTIONAL { ?movie mov:imdbRating ?rating . }\n" +
+            "  OPTIONAL { ?movie mov:duration ?duration . }\n" +
+            "  OPTIONAL { ?movie mov:plot ?plot . }\n";
 
     public static final String Q_BY_TITLE = PREFIXES + SELECT_MOVIE_FIELDS +
             "  FILTER(CONTAINS(LCASE(STR(?title)), LCASE(\"${query}\")))\n" +
@@ -35,24 +38,42 @@ public final class QueryTemplates {
             "} ORDER BY ?title";
 
     public static final String Q_SIMILAR = PREFIXES +
-            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel WHERE {\n" +
+            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel ?rating ?duration ?plot WHERE {\n" +
             "  ?source mov:title \"${movieTitle}\" .\n" +
             "  ?source mov:similarTo ?movie .\n" +
             "  ?movie  mov:title ?title .\n" +
             "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
             "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
             "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n" +
+            "  OPTIONAL { ?movie mov:imdbRating ?rating . }\n" +
+            "  OPTIONAL { ?movie mov:duration ?duration . }\n" +
+            "  OPTIONAL { ?movie mov:plot ?plot . }\n" +
             "  FILTER(?source != ?movie)\n" +
             "} ORDER BY ?title";
 
     public static final String Q_MASTERPIECES = PREFIXES +
-            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel WHERE {\n" +
+            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel ?rating ?duration ?plot WHERE {\n" +
             "  ?movie a mov:MasterpieceMovie ;\n" +
             "         mov:title ?title .\n" +
             "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
             "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
             "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n" +
+            "  OPTIONAL { ?movie mov:imdbRating ?rating . }\n" +
+            "  OPTIONAL { ?movie mov:duration ?duration . }\n" +
+            "  OPTIONAL { ?movie mov:plot ?plot . }\n" +
             "} ORDER BY ?title";
+
+    public static final String Q_ACCLAIMED = PREFIXES +
+            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel ?rating ?duration ?plot WHERE {\n" +
+            "  ?movie a mov:AcclaimedMovie ;\n" +
+            "         mov:title ?title .\n" +
+            "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
+            "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
+            "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n" +
+            "  OPTIONAL { ?movie mov:imdbRating ?rating . }\n" +
+            "  OPTIONAL { ?movie mov:duration ?duration . }\n" +
+            "  OPTIONAL { ?movie mov:plot ?plot . }\n" +
+            "} ORDER BY DESC(?rating)";
 
     private QueryTemplates() { }
 }
