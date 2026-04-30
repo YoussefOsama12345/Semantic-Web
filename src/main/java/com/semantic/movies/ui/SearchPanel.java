@@ -1,20 +1,10 @@
 package com.semantic.movies.ui;
 
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.Timer;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseAdapter;
@@ -27,20 +17,23 @@ public class SearchPanel extends JPanel {
     private static final int DEBOUNCE_MS = 280;
 
     private final JTextField field = new JTextField();
-    private final JLabel clearIcon = new JLabel("\u2715", SwingConstants.CENTER);
+    private final JLabel clearIcon = new JLabel("✕", SwingConstants.CENTER);
     private final Consumer<String> onSearch;
+    private final Runnable onAcclaimed;
     private final Timer debounce;
 
-    public SearchPanel(Consumer<String> onSearch) {
-        this.onSearch = onSearch;
-        this.debounce = new Timer(DEBOUNCE_MS, e -> fireSearch());
+    public SearchPanel(Consumer<String> onSearch, Runnable onAcclaimed) {
+        this.onSearch    = onSearch;
+        this.onAcclaimed = onAcclaimed;
+        this.debounce    = new Timer(DEBOUNCE_MS, e -> fireSearch());
         debounce.setRepeats(false);
 
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(12, 0));
         setBackground(Theme.BG);
         setBorder(new EmptyBorder(18, 24, 18, 24));
 
-        add(buildSearchBar(), BorderLayout.CENTER);
+        add(buildSearchBar(),       BorderLayout.CENTER);
+        add(buildAcclaimedButton(), BorderLayout.EAST);
     }
 
     private JPanel buildSearchBar() {
@@ -57,16 +50,27 @@ public class SearchPanel extends JPanel {
         return bar;
     }
 
+    private JButton buildAcclaimedButton() {
+        JButton btn = new JButton("🏆 Acclaimed");
+        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(Theme.PRIMARY);
+        btn.setOpaque(true);
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(128, Theme.INPUT_HEIGHT));
+        btn.addActionListener(e -> onAcclaimed.run());
+        return btn;
+    }
+
     private void configureField() {
         field.setFont(Theme.FONT_INPUT);
         field.setBorder(null);
         field.setOpaque(false);
         field.setForeground(Theme.TEXT_PRIMARY);
 
-        field.addActionListener(e -> {
-            debounce.stop();
-            fireSearch();
-        });
+        field.addActionListener(e -> { debounce.stop(); fireSearch(); });
         field.addFocusListener(new FocusAdapter() {
             @Override public void focusGained(FocusEvent e) {
                 if (field.getText().equals(PLACEHOLDER)) {
@@ -112,10 +116,7 @@ public class SearchPanel extends JPanel {
 
     private void fireSearch() {
         String text = field.getText();
-        if (text.equals(PLACEHOLDER) || text.isBlank()) {
-            onSearch.accept("");
-            return;
-        }
+        if (text.equals(PLACEHOLDER) || text.isBlank()) { onSearch.accept(""); return; }
         onSearch.accept(text.trim());
     }
 
@@ -138,5 +139,4 @@ public class SearchPanel extends JPanel {
             g2.dispose();
         }
     }
-
 }
