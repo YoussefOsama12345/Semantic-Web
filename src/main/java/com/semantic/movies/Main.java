@@ -21,10 +21,9 @@ public final class Main {
 
         try {
             OntologyManager ontology = new OntologyManager();
-            ontology.loadOntology("/ontology/movies.ttl");
+            ontology.loadOntology("/ontology/movies.owl");
 
             ReasoningEngine reasoner = new ReasoningEngine(ontology);
-            reasoner.loadSwrlRules();
             reasoner.runReasoning();
 
             String inferredPath = "target/movies-inferred.owl";
@@ -40,7 +39,7 @@ public final class Main {
         } catch (Exception ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null,
-                    "Failed to start the Semantic Movie Recommender:\n" + ex.getMessage(),
+                    "Failed to start:\n" + ex.getMessage(),
                     "Startup Error",
                     JOptionPane.ERROR_MESSAGE);
             System.exit(1);
