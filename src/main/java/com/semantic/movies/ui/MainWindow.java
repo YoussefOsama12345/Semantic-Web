@@ -37,7 +37,7 @@ public class MainWindow extends JFrame {
         setLayout(new BorderLayout());
 
         resultsPanel = new ResultsPanel(this::onMovieClicked);
-        detailPanel  = new MovieDetailPanel(this::onBack, this::onMovieClicked);
+        detailPanel  = new MovieDetailPanel(this::onBack);
         statusBar    = buildStatusBar();
 
         cardHost.setBackground(Theme.BG);
@@ -104,25 +104,7 @@ public class MainWindow extends JFrame {
     private void onMovieClicked(SearchResult clicked) {
         detailPanel.show(clicked);
         cards.show(cardHost, CARD_DETAIL);
-        setStatus("Loading movies similar to \"" + clicked.getTitle() + "\"...");
-
-        new SwingWorker<List<SearchResult>, Void>() {
-            @Override protected List<SearchResult> doInBackground() {
-                return searchController.findSimilar(clicked.getTitle());
-            }
-            @Override protected void done() {
-                try {
-                    List<SearchResult> similar = get();
-                    detailPanel.setSimilar(similar);
-                    setStatus(similar.isEmpty()
-                            ? "No similar movies for \"" + clicked.getTitle() + "\""
-                            : similar.size() + " similar movie" + (similar.size() == 1 ? "" : "s")
-                                    + " for \"" + clicked.getTitle() + "\"");
-                } catch (InterruptedException | ExecutionException ex) {
-                    setError(ex.getMessage());
-                }
-            }
-        }.execute();
+        setStatus("Showing details for \"" + clicked.getTitle() + "\"");
     }
 
     private void onBack() {

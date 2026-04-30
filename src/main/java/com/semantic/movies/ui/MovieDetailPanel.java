@@ -5,8 +5,6 @@ import com.semantic.movies.model.SearchResult;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class MovieDetailPanel extends JPanel {
 
@@ -16,16 +14,11 @@ public class MovieDetailPanel extends JPanel {
     private final JLabel ratingLabel = new JLabel();
     private final JLabel durLabel    = new JLabel();
     private final JTextArea plotArea = new JTextArea();
-    private final JLabel similarHeader = new JLabel("Similar Movies");
-    private final JPanel similarList = new JPanel();
-    private final JLabel similarEmpty = new JLabel("No similar movies found.", SwingConstants.LEFT);
 
     private final Runnable onBack;
-    private final Consumer<SearchResult> onSimilarClicked;
 
-    public MovieDetailPanel(Runnable onBack, Consumer<SearchResult> onSimilarClicked) {
+    public MovieDetailPanel(Runnable onBack) {
         this.onBack = onBack;
-        this.onSimilarClicked = onSimilarClicked;
 
         setBackground(Theme.BG);
         setLayout(new BorderLayout());
@@ -65,15 +58,6 @@ public class MovieDetailPanel extends JPanel {
         plotArea.setEditable(false);
         plotArea.setBorder(null);
         plotArea.setOpaque(false);
-
-        similarHeader.setFont(new Font("SansSerif", Font.BOLD, 16));
-        similarHeader.setForeground(Theme.TEXT_PRIMARY);
-
-        similarEmpty.setFont(Theme.FONT_SUBTITLE);
-        similarEmpty.setForeground(Theme.TEXT_MUTED);
-
-        similarList.setLayout(new BoxLayout(similarList, BoxLayout.Y_AXIS));
-        similarList.setOpaque(false);
     }
 
     private JPanel buildTopBar() {
@@ -113,14 +97,6 @@ public class MovieDetailPanel extends JPanel {
         body.add(Box.createVerticalStrut(8));
         plotArea.setAlignmentX(Component.LEFT_ALIGNMENT);
         body.add(plotArea);
-        body.add(Box.createVerticalStrut(28));
-        similarHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
-        body.add(similarHeader);
-        body.add(Box.createVerticalStrut(10));
-        similarList.setAlignmentX(Component.LEFT_ALIGNMENT);
-        body.add(similarList);
-        similarEmpty.setAlignmentX(Component.LEFT_ALIGNMENT);
-        body.add(similarEmpty);
         body.add(Box.createVerticalGlue());
 
         JScrollPane scroll = new JScrollPane(body,
@@ -184,25 +160,8 @@ public class MovieDetailPanel extends JPanel {
         durLabel.setText(r.getDurationLabel());
         plotArea.setText(r.getPlot() != null ? r.getPlot() : "No plot available.");
         plotArea.setCaretPosition(0);
-
-        similarList.removeAll();
-        similarEmpty.setVisible(false);
         revalidate();
         repaint();
-    }
-
-    public void setSimilar(List<SearchResult> similar) {
-        similarList.removeAll();
-        if (similar == null || similar.isEmpty()) {
-            similarEmpty.setVisible(true);
-        } else {
-            similarEmpty.setVisible(false);
-            for (SearchResult r : similar) {
-                similarList.add(new MovieListItem(r, onSimilarClicked));
-            }
-        }
-        similarList.revalidate();
-        similarList.repaint();
     }
 
     private static String buildMeta(SearchResult r) {

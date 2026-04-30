@@ -37,20 +37,6 @@ public final class QueryTemplates {
             "  FILTER(CONTAINS(LCASE(STR(?genreLabel)), LCASE(\"${query}\")))\n" +
             "} ORDER BY ?title";
 
-    public static final String Q_SIMILAR = PREFIXES +
-            "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel ?rating ?duration ?plot WHERE {\n" +
-            "  ?source mov:title \"${movieTitle}\" .\n" +
-            "  ?source mov:similarTo ?movie .\n" +
-            "  ?movie  mov:title ?title .\n" +
-            "  OPTIONAL { ?movie mov:releaseYear ?year . }\n" +
-            "  OPTIONAL { ?movie mov:hasDirector ?director . ?director mov:fullName ?directorName . }\n" +
-            "  OPTIONAL { ?movie mov:belongsToGenre ?genre . ?genre rdfs:label ?genreLabel . }\n" +
-            "  OPTIONAL { ?movie mov:imdbRating ?rating . }\n" +
-            "  OPTIONAL { ?movie mov:duration ?duration . }\n" +
-            "  OPTIONAL { ?movie mov:plot ?plot . }\n" +
-            "  FILTER(?source != ?movie)\n" +
-            "} ORDER BY ?title";
-
     public static final String Q_MASTERPIECES = PREFIXES +
             "SELECT DISTINCT ?movie ?title ?year ?directorName ?genreLabel ?rating ?duration ?plot WHERE {\n" +
             "  ?movie a mov:MasterpieceMovie ;\n" +

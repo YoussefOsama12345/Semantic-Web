@@ -41,11 +41,6 @@ public class SearchController {
         return new ArrayList<>(merged.values());
     }
 
-    public List<SearchResult> findSimilar(String movieTitle) {
-        if (movieTitle == null || movieTitle.isBlank()) return List.of();
-        return sparql.runTemplate(QueryTemplates.Q_SIMILAR, Map.of("movieTitle", movieTitle));
-    }
-
     public List<SearchResult> findMasterpieces() {
         return sparql.runTemplate(QueryTemplates.Q_MASTERPIECES, Map.of());
     }
