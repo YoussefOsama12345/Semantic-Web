@@ -31,14 +31,15 @@ public class MovieDetailPanel extends JPanel {
 
     private void styleComponents() {
         badgeLabel.setOpaque(true);
-        badgeLabel.setBackground(Theme.GOLD_SOFT);
-        badgeLabel.setForeground(Theme.GOLD);
-        badgeLabel.setFont(new Font("Serif", Font.BOLD, 36));
+        badgeLabel.setBackground(Theme.PRIMARY_SOFT);
+        badgeLabel.setForeground(Theme.PRIMARY);
+        badgeLabel.setFont(new Font("SansSerif", Font.BOLD, 32));
         badgeLabel.setPreferredSize(new Dimension(96, 96));
         badgeLabel.setMaximumSize(new Dimension(96, 96));
         badgeLabel.setMinimumSize(new Dimension(96, 96));
+        badgeLabel.setBorder(BorderFactory.createLineBorder(Theme.GOLD, 2, true));
 
-        titleLabel.setFont(new Font("Serif", Font.BOLD, 30));
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 26));
         titleLabel.setForeground(Theme.TEXT_PRIMARY);
 
         metaLabel.setFont(Theme.FONT_SUBTITLE);

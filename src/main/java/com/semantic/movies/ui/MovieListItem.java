@@ -33,7 +33,7 @@ public class MovieListItem extends JPanel {
         addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) {
                 bg = Theme.CARD_HOVER;
-                border = Theme.GOLD;
+                border = Theme.PRIMARY;
                 elevated = true;
                 repaint();
             }
@@ -67,9 +67,9 @@ public class MovieListItem extends JPanel {
     private static JLabel buildBadge(String title) {
         JLabel badge = new JLabel(initials(title), SwingConstants.CENTER);
         badge.setOpaque(true);
-        badge.setBackground(Theme.GOLD_SOFT);
-        badge.setForeground(Theme.GOLD);
-        badge.setFont(new Font("Serif", Font.BOLD, 17));
+        badge.setBackground(Theme.PRIMARY_SOFT);
+        badge.setForeground(Theme.PRIMARY);
+        badge.setFont(new Font("SansSerif", Font.BOLD, 16));
         badge.setPreferredSize(new Dimension(50, 50));
         return badge;
     }
