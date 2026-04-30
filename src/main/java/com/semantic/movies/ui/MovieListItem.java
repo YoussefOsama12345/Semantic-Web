@@ -2,20 +2,9 @@ package com.semantic.movies.ui;
 
 import com.semantic.movies.model.SearchResult;
 
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Cursor;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.Consumer;
@@ -36,7 +25,8 @@ public class MovieListItem extends JPanel {
         setAlignmentX(Component.LEFT_ALIGNMENT);
 
         add(buildBadge(result.getTitle()), BorderLayout.WEST);
-        add(buildText(result), BorderLayout.CENTER);
+        add(buildText(result),             BorderLayout.CENTER);
+        add(buildMeta(result),             BorderLayout.EAST);
 
         addMouseListener(new MouseAdapter() {
             @Override public void mouseEntered(MouseEvent e) { bg = Theme.CARD_HOVER; repaint(); }
@@ -87,6 +77,32 @@ public class MovieListItem extends JPanel {
             text.add(subtitle);
         }
         return text;
+    }
+
+    private static JPanel buildMeta(SearchResult result) {
+        JPanel meta = new JPanel();
+        meta.setOpaque(false);
+        meta.setLayout(new BoxLayout(meta, BoxLayout.Y_AXIS));
+
+        String rating = result.getRatingLabel();
+        if (!rating.isBlank()) {
+            JLabel ratingLabel = new JLabel(rating);
+            ratingLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
+            ratingLabel.setForeground(new Color(0xD97706));
+            ratingLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
+            meta.add(ratingLabel);
+        }
+
+        String dur = result.getDurationLabel();
+        if (!dur.isBlank()) {
+            JLabel durLabel = new JLabel(dur);
+            durLabel.setFont(Theme.FONT_SUBTITLE);
+            durLabel.setForeground(Theme.TEXT_MUTED);
+            durLabel.setBorder(new EmptyBorder(4, 0, 0, 0));
+            durLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
+            meta.add(durLabel);
+        }
+        return meta;
     }
 
     private static String initials(String title) {
