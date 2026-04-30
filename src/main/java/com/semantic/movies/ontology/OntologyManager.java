@@ -3,15 +3,15 @@ package com.semantic.movies.ontology;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.formats.RDFXMLDocumentFormat;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.parameters.Imports;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.util.InferredAxiomGenerator;
 import org.semanticweb.owlapi.util.InferredClassAssertionAxiomGenerator;
 import org.semanticweb.owlapi.util.InferredOntologyGenerator;
-import org.semanticweb.owlapi.util.InferredPropertyAssertionGenerator;
 import org.semanticweb.owlapi.util.InferredSubClassAxiomGenerator;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.List;
 
 public class OntologyManager {
@@ -35,32 +35,26 @@ public class OntologyManager {
 
     public void saveInferred(String outputPath, ReasoningEngine engine) throws Exception {
         OWLDataFactory df = manager.getOWLDataFactory();
-        org.semanticweb.owlapi.reasoner.OWLReasoner reasoner = engine.getReasoner();
+        OWLReasoner reasoner = engine.getReasoner();
 
-        List<InferredAxiomGenerator<? extends OWLAxiom>> generators = new ArrayList<>();
-        generators.add(new InferredSubClassAxiomGenerator());
-        generators.add(new InferredClassAssertionAxiomGenerator());
-        generators.add(new InferredPropertyAssertionGenerator());
-
-        InferredOntologyGenerator iog = new InferredOntologyGenerator(reasoner, generators);
-        iog.fillOntology(df, ontology);
+        List<InferredAxiomGenerator<? extends OWLAxiom>> generators = List.of(
+                new InferredSubClassAxiomGenerator(),
+                new InferredClassAssertionAxiomGenerator());
+        new InferredOntologyGenerator(reasoner, generators).fillOntology(df, ontology);
 
         materializeObjectPropertyAssertions(reasoner, df);
 
         File out = new File(outputPath);
-        File parent = out.getParentFile();
-        if (parent != null && !parent.exists()) parent.mkdirs();
+        if (out.getParentFile() != null) out.getParentFile().mkdirs();
         manager.saveOntology(ontology, new RDFXMLDocumentFormat(), IRI.create(out.toURI()));
         System.out.println("[OntologyManager] Inferred ontology saved to: " + out.getAbsolutePath());
     }
 
-    private void materializeObjectPropertyAssertions(
-            org.semanticweb.owlapi.reasoner.OWLReasoner reasoner, OWLDataFactory df) {
+    private void materializeObjectPropertyAssertions(OWLReasoner reasoner, OWLDataFactory df) {
         int added = 0;
-        for (OWLObjectProperty prop : ontology.getObjectPropertiesInSignature(org.semanticweb.owlapi.model.parameters.Imports.INCLUDED)) {
-            for (OWLNamedIndividual ind : ontology.getIndividualsInSignature(org.semanticweb.owlapi.model.parameters.Imports.INCLUDED)) {
-                for (OWLNamedIndividual target :
-                        reasoner.getObjectPropertyValues(ind, prop).getFlattened()) {
+        for (OWLObjectProperty prop : ontology.getObjectPropertiesInSignature(Imports.INCLUDED)) {
+            for (OWLNamedIndividual ind : ontology.getIndividualsInSignature(Imports.INCLUDED)) {
+                for (OWLNamedIndividual target : reasoner.getObjectPropertyValues(ind, prop).getFlattened()) {
                     OWLAxiom ax = df.getOWLObjectPropertyAssertionAxiom(prop, ind, target);
                     if (!ontology.containsAxiom(ax)) {
                         manager.addAxiom(ontology, ax);
