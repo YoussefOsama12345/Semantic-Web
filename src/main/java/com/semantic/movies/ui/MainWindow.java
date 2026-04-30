@@ -3,16 +3,9 @@ package com.semantic.movies.ui;
 import com.semantic.movies.model.SearchResult;
 import com.semantic.movies.search.SearchController;
 
-
-import javax.swing.BorderFactory;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.*;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Supplier;
@@ -23,6 +16,7 @@ public class MainWindow extends JFrame {
 
     private final SearchController searchController;
     private final ResultsPanel resultsPanel;
+    private final MovieDetailPanel detailPanel;
     private final JLabel statusBar;
 
     public MainWindow(SearchController searchController) {
@@ -30,25 +24,28 @@ public class MainWindow extends JFrame {
         this.searchController = searchController;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(960, 700);
-        setMinimumSize(new Dimension(680, 480));
+        setSize(1100, 700);
+        setMinimumSize(new Dimension(780, 480));
         setLocationRelativeTo(null);
         getContentPane().setBackground(Theme.BG);
         setLayout(new BorderLayout());
 
         resultsPanel = new ResultsPanel(this::onMovieClicked);
+        detailPanel  = new MovieDetailPanel();
+        detailPanel.setVisible(false);
         statusBar    = buildStatusBar();
 
-        add(buildTop(),    BorderLayout.NORTH);
-        add(resultsPanel,  BorderLayout.CENTER);
-        add(statusBar,     BorderLayout.SOUTH);
+        add(buildTop(),   BorderLayout.NORTH);
+        add(resultsPanel, BorderLayout.CENTER);
+        add(detailPanel,  BorderLayout.EAST);
+        add(statusBar,    BorderLayout.SOUTH);
     }
 
     private JPanel buildTop() {
         JPanel top = new JPanel(new BorderLayout());
         top.setBackground(Theme.BG);
         top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER));
-        top.add(new SearchPanel(this::onSearch), BorderLayout.CENTER);
+        top.add(new SearchPanel(this::onSearch, this::onAcclaimed), BorderLayout.CENTER);
         return top;
     }
 
@@ -66,6 +63,7 @@ public class MainWindow extends JFrame {
     }
 
     private void onSearch(String query) {
+        hideDetail();
         if (query == null || query.isBlank()) {
             resultsPanel.reset();
             setStatus("Ready");
@@ -78,7 +76,22 @@ public class MainWindow extends JFrame {
                         + " for \"" + query + "\""));
     }
 
+    private void onAcclaimed() {
+        hideDetail();
+        setStatus("Loading acclaimed movies...");
+        runAsync(
+                () -> searchController.findAcclaimed(),
+                results -> setStatus(results.isEmpty()
+                        ? "No acclaimed movies found."
+                        : results.size() + " acclaimed movie" + (results.size() == 1 ? "" : "s")));
+    }
+
     private void onMovieClicked(SearchResult clicked) {
+        detailPanel.show(clicked);
+        if (!detailPanel.isVisible()) {
+            detailPanel.setVisible(true);
+            revalidate();
+        }
         setStatus("Loading movies similar to \"" + clicked.getTitle() + "\"...");
         runAsync(
                 () -> searchController.findSimilar(clicked.getTitle()),
@@ -87,7 +100,15 @@ public class MainWindow extends JFrame {
                         : "Showing movies similar to: " + clicked.getTitle()));
     }
 
-    private void runAsync(Supplier<List<SearchResult>> task, java.util.function.Consumer<List<SearchResult>> onDone) {
+    private void hideDetail() {
+        if (detailPanel.isVisible()) {
+            detailPanel.setVisible(false);
+            revalidate();
+        }
+    }
+
+    private void runAsync(Supplier<List<SearchResult>> task,
+                          java.util.function.Consumer<List<SearchResult>> onDone) {
         resultsPanel.showLoading();
         new SwingWorker<List<SearchResult>, Void>() {
             @Override protected List<SearchResult> doInBackground() { return task.get(); }
