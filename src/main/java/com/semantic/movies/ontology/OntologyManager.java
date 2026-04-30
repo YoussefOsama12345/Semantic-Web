@@ -34,18 +34,41 @@ public class OntologyManager {
     }
 
     public void saveInferred(String outputPath, ReasoningEngine engine) throws Exception {
+        OWLDataFactory df = manager.getOWLDataFactory();
+        org.semanticweb.owlapi.reasoner.OWLReasoner reasoner = engine.getReasoner();
+
         List<InferredAxiomGenerator<? extends OWLAxiom>> generators = new ArrayList<>();
         generators.add(new InferredSubClassAxiomGenerator());
         generators.add(new InferredClassAssertionAxiomGenerator());
         generators.add(new InferredPropertyAssertionGenerator());
 
-        InferredOntologyGenerator iog = new InferredOntologyGenerator(engine.getReasoner(), generators);
-        iog.fillOntology(manager.getOWLDataFactory(), ontology);
+        InferredOntologyGenerator iog = new InferredOntologyGenerator(reasoner, generators);
+        iog.fillOntology(df, ontology);
+
+        materializeObjectPropertyAssertions(reasoner, df);
 
         File out = new File(outputPath);
         File parent = out.getParentFile();
         if (parent != null && !parent.exists()) parent.mkdirs();
         manager.saveOntology(ontology, new RDFXMLDocumentFormat(), IRI.create(out.toURI()));
         System.out.println("[OntologyManager] Inferred ontology saved to: " + out.getAbsolutePath());
+    }
+
+    private void materializeObjectPropertyAssertions(
+            org.semanticweb.owlapi.reasoner.OWLReasoner reasoner, OWLDataFactory df) {
+        int added = 0;
+        for (OWLObjectProperty prop : ontology.getObjectPropertiesInSignature(org.semanticweb.owlapi.model.parameters.Imports.INCLUDED)) {
+            for (OWLNamedIndividual ind : ontology.getIndividualsInSignature(org.semanticweb.owlapi.model.parameters.Imports.INCLUDED)) {
+                for (OWLNamedIndividual target :
+                        reasoner.getObjectPropertyValues(ind, prop).getFlattened()) {
+                    OWLAxiom ax = df.getOWLObjectPropertyAssertionAxiom(prop, ind, target);
+                    if (!ontology.containsAxiom(ax)) {
+                        manager.addAxiom(ontology, ax);
+                        added++;
+                    }
+                }
+            }
+        }
+        System.out.println("[OntologyManager] Materialized " + added + " inferred object property assertions.");
     }
 }
