@@ -41,6 +41,10 @@ public class SearchController {
         return new ArrayList<>(merged.values());
     }
 
+    public List<SearchResult> findAll() {
+        return sparql.runTemplate(QueryTemplates.Q_ALL_MOVIES, Map.of());
+    }
+
     public List<SearchResult> findMasterpieces() {
         return sparql.runTemplate(QueryTemplates.Q_MASTERPIECES, Map.of());
     }

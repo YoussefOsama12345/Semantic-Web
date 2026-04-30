@@ -13,33 +13,30 @@ import java.util.function.Consumer;
 
 public class SearchPanel extends JPanel {
 
-    private static final String PLACEHOLDER = "Search movies, actors, directors, or genres...";
+    private static final String PLACEHOLDER = "🔎  Search movies, actors, directors, or genres...";
     private static final int DEBOUNCE_MS = 280;
 
     private final JTextField field = new JTextField();
     private final JLabel clearIcon = new JLabel("✕", SwingConstants.CENTER);
     private final Consumer<String> onSearch;
-    private final Runnable onAcclaimed;
     private final Timer debounce;
 
-    public SearchPanel(Consumer<String> onSearch, Runnable onAcclaimed) {
-        this.onSearch    = onSearch;
-        this.onAcclaimed = onAcclaimed;
-        this.debounce    = new Timer(DEBOUNCE_MS, e -> fireSearch());
+    public SearchPanel(Consumer<String> onSearch) {
+        this.onSearch = onSearch;
+        this.debounce = new Timer(DEBOUNCE_MS, e -> fireSearch());
         debounce.setRepeats(false);
 
-        setLayout(new BorderLayout(12, 0));
         setBackground(Theme.BG);
-        setBorder(new EmptyBorder(18, 24, 18, 24));
+        setLayout(new BorderLayout());
+        setBorder(new EmptyBorder(22, 28, 18, 28));
 
-        add(buildSearchBar(),       BorderLayout.CENTER);
-        add(buildAcclaimedButton(), BorderLayout.EAST);
+        add(buildSearchBar(), BorderLayout.CENTER);
     }
 
     private JPanel buildSearchBar() {
         RoundedBar bar = new RoundedBar();
         bar.setLayout(new BorderLayout(10, 0));
-        bar.setBorder(new EmptyBorder(0, 16, 0, 12));
+        bar.setBorder(new EmptyBorder(0, 18, 0, 14));
         bar.setPreferredSize(new Dimension(0, Theme.INPUT_HEIGHT));
 
         configureField();
@@ -50,25 +47,12 @@ public class SearchPanel extends JPanel {
         return bar;
     }
 
-    private JButton buildAcclaimedButton() {
-        JButton btn = new JButton("🏆 Acclaimed");
-        btn.setFont(new Font("SansSerif", Font.BOLD, 13));
-        btn.setForeground(Color.WHITE);
-        btn.setBackground(Theme.PRIMARY);
-        btn.setOpaque(true);
-        btn.setBorderPainted(false);
-        btn.setFocusPainted(false);
-        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(128, Theme.INPUT_HEIGHT));
-        btn.addActionListener(e -> onAcclaimed.run());
-        return btn;
-    }
-
     private void configureField() {
         field.setFont(Theme.FONT_INPUT);
         field.setBorder(null);
         field.setOpaque(false);
         field.setForeground(Theme.TEXT_PRIMARY);
+        field.setCaretColor(Theme.PRIMARY);
 
         field.addActionListener(e -> { debounce.stop(); fireSearch(); });
         field.addFocusListener(new FocusAdapter() {
@@ -97,7 +81,7 @@ public class SearchPanel extends JPanel {
         clearIcon.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         clearIcon.setVisible(false);
         clearIcon.addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { clearIcon.setForeground(Theme.TEXT_PRIMARY); }
+            @Override public void mouseEntered(MouseEvent e) { clearIcon.setForeground(Theme.PRIMARY); }
             @Override public void mouseExited(MouseEvent e)  { clearIcon.setForeground(Theme.TEXT_MUTED); }
             @Override public void mouseClicked(MouseEvent e) {
                 field.setText("");
@@ -133,9 +117,9 @@ public class SearchPanel extends JPanel {
             Graphics2D g2 = (Graphics2D) g.create();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setColor(Theme.CARD);
-            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 12, 12);
+            g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
             g2.setColor(Theme.BORDER);
-            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 12, 12);
+            g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
             g2.dispose();
         }
     }

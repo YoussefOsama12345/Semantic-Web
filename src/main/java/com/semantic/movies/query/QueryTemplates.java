@@ -19,6 +19,9 @@ public final class QueryTemplates {
             "  OPTIONAL { ?movie mov:duration ?duration . }\n" +
             "  OPTIONAL { ?movie mov:plot ?plot . }\n";
 
+    public static final String Q_ALL_MOVIES = PREFIXES + SELECT_MOVIE_FIELDS +
+            "} ORDER BY ?title";
+
     public static final String Q_BY_TITLE = PREFIXES + SELECT_MOVIE_FIELDS +
             "  FILTER(CONTAINS(LCASE(STR(?title)), LCASE(\"${query}\")))\n" +
             "} ORDER BY ?title";

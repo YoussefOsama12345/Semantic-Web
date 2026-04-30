@@ -43,7 +43,7 @@ public class ResultsPanel extends JPanel {
         reset();
     }
 
-    public void reset()                 { showPlaceholder("\uD83C\uDFAC", "Type a movie, actor, director, or genre above to begin."); }
+    public void reset()                 { showPlaceholder("\uD83C\uDFAC", "Pick a category from the sidebar or use the search bar above."); }
     public void showLoading()           { showPlaceholder("\u29D7", "Searching..."); }
     public void showError(String msg)   { showPlaceholder("\u26A0", "Error: " + msg); }
 

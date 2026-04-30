@@ -13,7 +13,7 @@ import java.util.function.Supplier;
 
 public class MainWindow extends JFrame {
 
-    private static final Color ERROR_COLOR = new Color(0xB91C1C);
+    private static final Color ERROR_COLOR = new Color(0xFF, 0x6B, 0x6B);
 
     private static final String CARD_SEARCH = "search";
     private static final String CARD_DETAIL = "detail";
@@ -26,12 +26,12 @@ public class MainWindow extends JFrame {
     private final JPanel cardHost = new JPanel(cards);
 
     public MainWindow(SearchController searchController) {
-        super("Semantic Movie Recommender");
+        super("Cinema — Semantic Movie Recommender");
         this.searchController = searchController;
 
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(1000, 720);
-        setMinimumSize(new Dimension(720, 480));
+        setSize(1180, 760);
+        setMinimumSize(new Dimension(900, 540));
         setLocationRelativeTo(null);
         getContentPane().setBackground(Theme.BG);
         setLayout(new BorderLayout());
@@ -44,6 +44,13 @@ public class MainWindow extends JFrame {
         cardHost.add(buildSearchCard(), CARD_SEARCH);
         cardHost.add(detailPanel,       CARD_DETAIL);
 
+        Sidebar sidebar = new Sidebar(
+                this::onAll,
+                this::onAcclaimed,
+                this::onMasterpieces,
+                this::onGenre);
+
+        add(sidebar,   BorderLayout.WEST);
         add(cardHost,  BorderLayout.CENTER);
         add(statusBar, BorderLayout.SOUTH);
 
@@ -53,29 +60,21 @@ public class MainWindow extends JFrame {
     private JPanel buildSearchCard() {
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Theme.BG);
-        card.add(buildTop(),    BorderLayout.NORTH);
-        card.add(resultsPanel,  BorderLayout.CENTER);
+        card.add(new SearchPanel(this::onSearch), BorderLayout.NORTH);
+        card.add(resultsPanel,                     BorderLayout.CENTER);
         return card;
-    }
-
-    private JPanel buildTop() {
-        JPanel top = new JPanel(new BorderLayout());
-        top.setBackground(Theme.BG);
-        top.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BORDER));
-        top.add(new SearchPanel(this::onSearch, this::onAcclaimed), BorderLayout.CENTER);
-        return top;
     }
 
     private JLabel buildStatusBar() {
         JLabel bar = new JLabel("  Ready");
         bar.setFont(Theme.FONT_STATUS);
-        bar.setForeground(Theme.TEXT_SECONDARY);
+        bar.setForeground(Theme.TEXT_MUTED);
         bar.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(1, 0, 0, 0, Theme.BORDER),
-                new EmptyBorder(6, 18, 6, 18)));
+                new EmptyBorder(8, 22, 8, 22)));
         bar.setOpaque(true);
-        bar.setBackground(Theme.CARD);
-        bar.setPreferredSize(new Dimension(0, 28));
+        bar.setBackground(Theme.SIDEBAR_BG);
+        bar.setPreferredSize(new Dimension(0, 30));
         return bar;
     }
 
@@ -92,6 +91,14 @@ public class MainWindow extends JFrame {
                         + " for \"" + query + "\""));
     }
 
+    private void onAll() {
+        setStatus("Loading all movies...");
+        runAsync(
+                () -> searchController.findAll(),
+                results -> setStatus(results.size() + " movie" + (results.size() == 1 ? "" : "s")
+                        + " in catalogue"));
+    }
+
     private void onAcclaimed() {
         setStatus("Loading acclaimed movies...");
         runAsync(
@@ -99,6 +106,23 @@ public class MainWindow extends JFrame {
                 results -> setStatus(results.isEmpty()
                         ? "No acclaimed movies found."
                         : results.size() + " acclaimed movie" + (results.size() == 1 ? "" : "s")));
+    }
+
+    private void onMasterpieces() {
+        setStatus("Loading masterpieces...");
+        runAsync(
+                () -> searchController.findMasterpieces(),
+                results -> setStatus(results.isEmpty()
+                        ? "No masterpieces found."
+                        : results.size() + " masterpiece" + (results.size() == 1 ? "" : "s")));
+    }
+
+    private void onGenre(String genre) {
+        setStatus("Loading " + genre + " movies...");
+        runAsync(
+                () -> searchController.search(genre),
+                results -> setStatus(results.size() + " " + genre + " movie"
+                        + (results.size() == 1 ? "" : "s")));
     }
 
     private void onMovieClicked(SearchResult clicked) {
@@ -113,6 +137,7 @@ public class MainWindow extends JFrame {
     }
 
     private void runAsync(Supplier<List<SearchResult>> task, Consumer<List<SearchResult>> onDone) {
+        cards.show(cardHost, CARD_SEARCH);
         resultsPanel.showLoading();
         new SwingWorker<List<SearchResult>, Void>() {
             @Override protected List<SearchResult> doInBackground() { return task.get(); }
@@ -132,7 +157,7 @@ public class MainWindow extends JFrame {
 
     private void setStatus(String text) {
         statusBar.setText("  " + text);
-        statusBar.setForeground(Theme.TEXT_SECONDARY);
+        statusBar.setForeground(Theme.TEXT_MUTED);
     }
 
     private void setError(String text) {

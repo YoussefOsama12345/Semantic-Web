@@ -12,13 +12,14 @@ import java.util.function.Consumer;
 public class MovieListItem extends JPanel {
 
     private static final int PAD_H = 6;
-    private static final int PAD_V = 3;
+    private static final int PAD_V = 4;
 
     private Color bg = Theme.CARD;
+    private Color border = Theme.BORDER;
 
     public MovieListItem(SearchResult result, Consumer<SearchResult> onClick) {
         setOpaque(false);
-        setLayout(new BorderLayout(14, 0));
+        setLayout(new BorderLayout(16, 0));
         setBorder(new EmptyBorder(PAD_V + 14, PAD_H + 18, PAD_V + 14, PAD_H + 18));
         setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         setMaximumSize(new Dimension(Integer.MAX_VALUE, 92));
@@ -29,8 +30,16 @@ public class MovieListItem extends JPanel {
         add(buildMeta(result),             BorderLayout.EAST);
 
         addMouseListener(new MouseAdapter() {
-            @Override public void mouseEntered(MouseEvent e) { bg = Theme.CARD_HOVER; repaint(); }
-            @Override public void mouseExited(MouseEvent e)  { bg = Theme.CARD;       repaint(); }
+            @Override public void mouseEntered(MouseEvent e) {
+                bg = Theme.CARD_HOVER;
+                border = Theme.PRIMARY;
+                repaint();
+            }
+            @Override public void mouseExited(MouseEvent e) {
+                bg = Theme.CARD;
+                border = Theme.BORDER;
+                repaint();
+            }
             @Override public void mouseClicked(MouseEvent e) { onClick.accept(result); }
         });
     }
@@ -40,9 +49,9 @@ public class MovieListItem extends JPanel {
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         int x = PAD_H, y = PAD_V, w = getWidth() - 2 * PAD_H, h = getHeight() - 2 * PAD_V;
         g2.setColor(bg);
-        g2.fillRoundRect(x, y, w, h, 14, 14);
-        g2.setColor(Theme.BORDER);
-        g2.drawRoundRect(x, y, w - 1, h - 1, 14, 14);
+        g2.fillRoundRect(x, y, w, h, 10, 10);
+        g2.setColor(border);
+        g2.drawRoundRect(x, y, w - 1, h - 1, 10, 10);
         g2.dispose();
     }
 
@@ -52,7 +61,8 @@ public class MovieListItem extends JPanel {
         badge.setBackground(Theme.ACCENT_SOFT);
         badge.setForeground(Theme.PRIMARY);
         badge.setFont(new Font("SansSerif", Font.BOLD, 16));
-        badge.setPreferredSize(new Dimension(46, 46));
+        badge.setPreferredSize(new Dimension(48, 48));
+        badge.setBorder(BorderFactory.createLineBorder(Theme.PRIMARY, 1, true));
         return badge;
     }
 
@@ -88,7 +98,7 @@ public class MovieListItem extends JPanel {
         if (!rating.isBlank()) {
             JLabel ratingLabel = new JLabel(rating);
             ratingLabel.setFont(new Font("SansSerif", Font.BOLD, 13));
-            ratingLabel.setForeground(new Color(0xD97706));
+            ratingLabel.setForeground(Theme.PRIMARY);
             ratingLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
             meta.add(ratingLabel);
         }
