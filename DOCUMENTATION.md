@@ -10,8 +10,6 @@
 | 4  | Member 4        | ID 4          |
 | 5  | Member 5        | ID 5          |
 
-<div style="page-break-after: always;"></div>
-
 # 1. Problem
 
 Conventional movie search engines (IMDb, Google, streaming catalogues) match **keywords**, not meaning. A query such as *"movies similar to The Dark Knight"* returns the page of *The Dark Knight* itself because the engine does not understand the relation *similar to*. Implicit knowledge — for example that two films sharing a director are related, that an Oscar-winning film is *acclaimed*, or that a film with both an Oscar and a Cannes is a *masterpiece* — is never surfaced unless every such fact is manually tagged. There is no logical layer capable of inferring new facts, enforcing consistency across the catalogue, or explaining *why* a recommendation was made.
@@ -26,7 +24,7 @@ The project addresses three concrete shortcomings of this status quo:
 
 The system replaces keyword search with a complete Semantic-Web pipeline. Each layer has a single, well-defined responsibility:
 
-1. **Ontology authoring (Protégé).** The movie domain is modelled as an **OWL 2 DL ontology** containing classes, object/data properties, individuals (32 real-world films plus their cast, awards and genres), OWL restrictions, and **SWRL rules** authored in Protégé's SWRLTab. The whole knowledge base — terminological and rule-based — is exported as a single **RDF/XML** file.
+1. **Ontology authoring (Protégé).** The movie domain is modelled as an **OWL 2 DL ontology** containing classes, object/data properties, individuals (31 real-world films plus their cast, awards and genres), OWL restrictions, and **SWRL rules** authored in Protégé's SWRLTab. The whole knowledge base — terminological and rule-based — is exported as a single **RDF/XML** file.
 2. **Reasoning (HermiT).** At application startup, the **HermiT** OWL 2 DL reasoner classifies the ontology, enforces consistency, and applies every DL-safe SWRL rule, producing inferred class memberships such as `AcclaimedMovie` and `MasterpieceMovie`.
 3. **Materialisation (OWL API).** The OWL API's `InferredOntologyGenerator` writes inferred subclass and class-assertion axioms into a derived ontology file. The application code never re-implements an inference; it just delegates to the reasoner.
 4. **Query layer (Apache Jena, SPARQL).** Apache Jena loads the inferred ontology as an RDF model and serves the UI through six parameterised SPARQL templates (title, actor, director, genre, masterpiece, acclaimed). Because queries run against the *inferred* model, every reasoning result is automatically query-able.
@@ -36,7 +34,7 @@ The methodology cleanly separates **what we know** (ontology), **how we conclude
 
 # 3. Results
 
-- **Knowledge base:** 32 movies, ~80 individuals (people, awards, genres), 12 object properties, 8 data properties, multi-axiom OWL definitions for `ClassicMovie`, `AcclaimedMovie`, `MasterpieceMovie`.
+- **Knowledge base:** 31 movies, 173 named individuals total (movies, actors, directors, writers, awards, genres, production companies, countries), 24 classes, 12 object properties, 8 data properties, multi-axiom OWL definitions for `ClassicMovie`, `AcclaimedMovie`, `MasterpieceMovie`, and 9 SWRL rules authored in Protégé's SWRLTab.
 - **Inference:** the SWRL rules and OWL class-equivalence axioms derive every `MasterpieceMovie` and `AcclaimedMovie` membership and every `frequentCollaborator` link — none of them hand-written.
 - **Performance:** ontology load + HermiT classification + materialisation completes in under two seconds at startup; per-keystroke search latency is sub-second thanks to a 280 ms debounce and a preloaded Jena model.
 - **Coverage:** six parameterised SPARQL templates serve the UI; every result row is uniformly enriched with title, year, director, genre, IMDb rating, duration, and plot.
@@ -52,8 +50,6 @@ The project demonstrates how the Semantic Web stack can solve a real problem tha
 - **For catalogue curators:** the reasoner catches contradictions (a film with two directors, an actor in two genres of a disjoint pair) automatically — work that today is done manually and incompletely.
 - **For education and research:** the codebase is a compact, end-to-end reference for the Semantic Web stack — Protégé authoring, OWL DL, SWRL, HermiT, OWL API, SPARQL, Apache Jena — in fewer than 1 000 lines of Java. It can be re-targeted to medical drugs, legal precedents, academic papers, or any other domain by replacing the ontology file alone.
 - **Extensibility with zero code changes.** Adding a movie is one more cluster of triples in Protégé. Adding a rule is one more SWRL axiom. Adding a query is one more template constant. The pipeline never has to be touched.
-
-<div style="page-break-after: always;"></div>
 
 # 5. Ontology of the Project and How We Built It
 
@@ -214,31 +210,31 @@ Together these axioms form a theory in OWL 2 DL that HermiT can check for consis
 
 ## 5.7 Instance Data
 
-The ontology is populated with **thirty-two real-world movies** drawn from a broad range of eras and genres — Inception, The Godfather, The Dark Knight, Interstellar, Parasite, The Matrix, Goodfellas, Fight Club, Shutter Island, The Prestige, Titanic, The Shawshank Redemption, Gladiator, Lord of the Rings, Schindler's List, Saving Private Ryan, The Silence of the Lambs, Avatar, The Departed, Casablanca, Citizen Kane, Psycho, The Lion King, Toy Story, Spirited Away, The Green Mile, Memento, Joker, Whiplash, The Wolf of Wall Street, Forrest Gump, and Pulp Fiction — together with their directors, leading actors, genres, release years, ratings, and awards. Each film contributes a small cluster of RDF triples, and the union of these clusters is a densely connected graph that reveals non-obvious relationships once the reasoner runs.
-
-<div style="page-break-after: always;"></div>
+The ontology is populated with **thirty-one real-world movies** drawn from a broad range of eras and genres — Inception, The Godfather, The Dark Knight, Interstellar, Parasite, The Matrix, Goodfellas, Fight Club, Shutter Island, The Prestige, Titanic, The Shawshank Redemption, Gladiator, Schindler's List, Saving Private Ryan, The Silence of the Lambs, Avatar, The Departed, Casablanca, Citizen Kane, Psycho, The Lion King, Toy Story, Spirited Away, The Green Mile, Memento, Joker, Whiplash, The Wolf of Wall Street, Forrest Gump, and Pulp Fiction — together with their directors, leading actors, genres, release years, ratings, durations, plots, and awards. Each film contributes a small cluster of RDF triples, and the union of these clusters yields **173 named individuals** (movies, people, awards, genres, production companies, countries) — a densely connected graph that reveals non-obvious relationships once the reasoner runs.
 
 ## 5.8 Rule Layer (SWRL)
 
-A set of **SWRL rules** extends the purely terminological knowledge with rule-based entailments. The rules are authored directly inside Protégé (via the SWRLTab) and are stored in the OWL file as `swrl:Imp` axioms — the Java application never adds them programmatically. All rules are DL-safe, which is the decidable fragment HermiT natively supports.
+**Nine SWRL rules** extend the purely terminological knowledge with rule-based entailments. The rules are authored directly inside Protégé (via the SWRLTab) and stored in the OWL file as `swrl:Imp` axioms — the Java application never adds them programmatically. All rules are DL-safe, which is the decidable fragment HermiT natively supports.
 
-**Rule — Masterpiece by multiple awards**
+**Rule 1 — Similar by shared director.** Two distinct movies with the same director become `similarTo`.
 
-> Any movie that won both an Oscar and a Cannes award is typed as a MasterpieceMovie.
+**Rule 2 — Similar by shared genre and Oscar wins.** Two distinct Oscar-winning movies in the same genre become `similarTo`.
 
-**Rule — Acclaimed by Oscar**
+**Rule 3 — Masterpiece by Oscar + Cannes.** A movie that won both an Oscar and a Cannes award is typed as `MasterpieceMovie`.
 
-> Any movie that won at least one Oscar is typed as an AcclaimedMovie. (Also expressible as an OWL equivalent-class axiom; redundancy is intentional and lets the rule engine cross-validate the OWL definition.)
+**Rule 4 — Frequent collaborator (actor / director).** An actor and a director who appear together in two distinct movies become `frequentCollaborator`.
 
-**Rule — Frequent collaborator**
+**Rule 5 — Acclaimed by Oscar.** A movie that won at least one Oscar is typed as `AcclaimedMovie`. (Also expressible as an OWL equivalent-class axiom; the rule and the axiom cross-validate one another.)
 
-> If the same actor and the same director appear together in two distinct movies, they are tagged as `frequentCollaborator` of one another.
+**Rule 6 — Similar by shared writer.** Two distinct movies with the same writer become `similarTo`.
 
-**Rule — Similar by shared director / genre / award**
+**Rule 7 — Similar by shared genre and Golden Globe wins.** Two distinct Golden-Globe–winning movies in the same genre become `similarTo`.
 
-> Several SWRL rules derive `similarTo` between movies that share specific structural features (same director, same genre with comparable awards, etc.). The `similarTo` property is declared symmetric, so a single firing covers both directions.
+**Rule 8 — Frequent collaborator (actor / actor).** Two distinct actors who co-star in two distinct movies become `frequentCollaborator`.
 
-Without rules, relations such as `frequentCollaborator` and `MasterpieceMovie` membership would have to be hand-asserted for every applicable case, which does not scale. With rules, the ABox remains small and focused on primary facts and the reasoner derives the secondary facts automatically.
+**Rule 9 — Similar by shared production company and genre.** Two distinct movies produced by the same company in the same genre become `similarTo`.
+
+Without rules, relations such as `frequentCollaborator`, `similarTo` and `MasterpieceMovie` membership would have to be hand-asserted for every applicable case, which does not scale. With rules, the ABox remains small and focused on primary facts and the reasoner derives the secondary facts automatically. The `similarTo` property is declared *symmetric* in OWL, so each firing of a similarity rule covers both directions for free.
 
 ## 5.9 How the Project Was Built
 
@@ -254,7 +250,7 @@ We converted the conceptual model into a class hierarchy, starting from `owl:Thi
 For every relationship between classes we created an object property, and for every attribute of a class we created a data property. Each property received a precise domain, range, and wherever appropriate a logical characteristic (functional, symmetric, inverse). This phase is what turned the taxonomy from a list of names into a true *graph* of connected entities.
 
 **Phase 4 — Instance population.**
-We populated the ontology with thirty-two real-world films and the people, genres, and awards they relate to. Each individual was declared as a member of its primary class and connected to its neighbours through property assertions. The resulting ABox is intentionally compact: we relied on reasoning and rules to amplify it rather than entering every derived fact by hand.
+We populated the ontology with thirty-one real-world films and the people, genres, and awards they relate to. Each individual was declared as a member of its primary class and connected to its neighbours through property assertions. The resulting ABox is intentionally compact: we relied on reasoning and rules to amplify it rather than entering every derived fact by hand.
 
 **Phase 5 — Rule authoring inside Protégé.**
 SWRL rules were authored directly in Protégé using the SWRLTab. Each rule was tested against HermiT inside Protégé to verify that it fires on the right individuals and that the inferences are sound. Once validated, the rules became permanent `swrl:Imp` axioms in the ontology file itself.
@@ -266,8 +262,6 @@ The completed ontology — classes, properties, individuals, OWL axioms, and SWR
 Apache Jena loads the inferred file as an RDF model, and a fixed library of parameterised SPARQL queries — covering search by title, by actor, by director, by genre, masterpiece classification, and acclaimed classification — serves the user interface. The Swing GUI is a two-page navigation: a search page with a results list, and a full-page movie detail view with a back button. Because the queries run against the inferred model, the UI automatically benefits from the OWL definitions and the SWRL rules without any additional code.
 
 The end result is a system where **data, knowledge, and rules evolve independently of the application logic**. Adding a new movie, a new rule, or a new restriction is done in Protégé, exported, and immediately reflected in the application — which is precisely the promise of a Semantic Web solution.
-
-<div style="page-break-after: always;"></div>
 
 # 6. References
 
