@@ -14,32 +14,44 @@
 
 # 1. Problem
 
-Conventional movie search engines (IMDb, Google, streaming catalogues) match **keywords**, not meaning. A query such as *"movies similar to The Dark Knight"* returns the page of *The Dark Knight* itself because the engine does not understand the relation *similar to*. Implicit knowledge, for example that two films sharing a director are related, is never surfaced unless manually tagged, and there is no logical layer capable of inferring new facts or guaranteeing consistency.
+Conventional movie search engines (IMDb, Google, streaming catalogues) match **keywords**, not meaning. A query such as *"movies similar to The Dark Knight"* returns the page of *The Dark Knight* itself because the engine does not understand the relation *similar to*. Implicit knowledge — for example that two films sharing a director are related, that an Oscar-winning film is *acclaimed*, or that a film with both an Oscar and a Cannes is a *masterpiece* — is never surfaced unless every such fact is manually tagged. There is no logical layer capable of inferring new facts, enforcing consistency across the catalogue, or explaining *why* a recommendation was made.
+
+The project addresses three concrete shortcomings of this status quo:
+
+1. **No semantics.** Keyword engines cannot follow the relation *X similar to Y*, *X directed by the same person as Y*, or *X belongs to the class of acclaimed films*.
+2. **No reasoning.** Inconsistencies — a movie with two declared directors, an actor in two birth years — go undetected.
+3. **No explainability.** Recommendations from collaborative-filtering systems cannot be justified to the user; semantic recommendations can.
 
 # 2. Methodology
 
-The system replaces keyword search with a Semantic-Web pipeline:
+The system replaces keyword search with a complete Semantic-Web pipeline. Each layer has a single, well-defined responsibility:
 
-1. The movie domain is modelled as an **OWL 2 ontology** with classes, properties, individuals and restrictions.
-2. Domain knowledge is encoded both as **OWL axioms** (defined classes, functional, symmetric, and inverse properties) and as four declarative **SWRL rules**.
-3. The **HermiT** reasoner classifies the ontology, enforces consistency, and materialises every inferred axiom.
-4. **Apache Jena** loads the enriched model and runs parameterised **SPARQL** queries against both explicit and inferred triples.
-5. A minimalist **Java Swing** interface exposes the result through a single realtime, debounced search bar.
+1. **Ontology authoring (Protégé).** The movie domain is modelled as an **OWL 2 DL ontology** containing classes, object/data properties, individuals (32 real-world films plus their cast, awards and genres), OWL restrictions, and **SWRL rules** authored in Protégé's SWRLTab. The whole knowledge base — terminological and rule-based — is exported as a single **RDF/XML** file.
+2. **Reasoning (HermiT).** At application startup, the **HermiT** OWL 2 DL reasoner classifies the ontology, enforces consistency, and applies every DL-safe SWRL rule, producing inferred class memberships such as `AcclaimedMovie` and `MasterpieceMovie`.
+3. **Materialisation (OWL API).** The OWL API's `InferredOntologyGenerator` writes inferred subclass and class-assertion axioms into a derived ontology file. The application code never re-implements an inference; it just delegates to the reasoner.
+4. **Query layer (Apache Jena, SPARQL).** Apache Jena loads the inferred ontology as an RDF model and serves the UI through six parameterised SPARQL templates (title, actor, director, genre, masterpiece, acclaimed). Because queries run against the *inferred* model, every reasoning result is automatically query-able.
+5. **Presentation (Java Swing).** A two-page Swing GUI — search page with debounced realtime list, and a full-page movie detail view with a Back button — surfaces the results.
+
+The methodology cleanly separates **what we know** (ontology), **how we conclude things from what we know** (rules + reasoner), and **how we ask questions** (SPARQL). No piece of knowledge is hard-coded in Java.
 
 # 3. Results
 
-- The inferred ontology contains all `MasterpieceMovie` and `AcclaimedMovie` memberships derived by the SWRL rules and OWL class-equivalence axioms — none of them hand-written.
-- Reasoning completes in under two seconds at startup.
-- Per-keystroke query latency is sub-second thanks to a 280 ms debounce and a preloaded model.
-- Six SPARQL templates (title, actor, director, genre, masterpiece, acclaimed) return enriched rows with title, year, director, genre, IMDb rating, duration, and plot.
-- The ontology is verified logically consistent by HermiT on every launch.
+- **Knowledge base:** 32 movies, ~80 individuals (people, awards, genres), 12 object properties, 8 data properties, multi-axiom OWL definitions for `ClassicMovie`, `AcclaimedMovie`, `MasterpieceMovie`.
+- **Inference:** the SWRL rules and OWL class-equivalence axioms derive every `MasterpieceMovie` and `AcclaimedMovie` membership and every `frequentCollaborator` link — none of them hand-written.
+- **Performance:** ontology load + HermiT classification + materialisation completes in under two seconds at startup; per-keystroke search latency is sub-second thanks to a 280 ms debounce and a preloaded Jena model.
+- **Coverage:** six parameterised SPARQL templates serve the UI; every result row is uniformly enriched with title, year, director, genre, IMDb rating, duration, and plot.
+- **Correctness:** HermiT verifies ontology consistency on every launch; an inconsistency would be reported instead of swallowed.
+- **Maintainability:** modifying or extending the knowledge base — adding a movie, a property, or a rule — is done in Protégé and re-exported, with no Java code change required.
 
 # 4. Real-World Impact
 
-- **End-users** discover films through *semantic* relationships instead of opaque "people also watched" feeds.
-- **Streaming platforms** could supplement statistical recommenders with *explainable* suggestions, for example *"recommended because it shares a director with X"*.
-- **Education** — a compact, self-contained illustration of the Semantic Web stack.
-- The system is **extensible with zero code changes**: adding a movie is one more cluster of triples, adding a rule is one more SWRL axiom, adding a query is one more template.
+The project demonstrates how the Semantic Web stack can solve a real problem that affects millions of users every day: **finding films through meaning, not keywords.**
+
+- **For end-users:** discoverability shifts from opaque collaborative-filtering ("people also watched…") to *explainable* semantic links — *"recommended because it won an Oscar in the same genre"*, *"recommended because Christopher Nolan also directed it"*. Every suggestion has a derivation that can be shown to the user.
+- **For streaming platforms (Netflix, Disney+, Prime Video):** a semantic layer is a low-cost complement to existing statistical recommenders. It produces high-quality cold-start suggestions for new titles where viewing history is sparse, and it gives editorial teams a controllable way to surface curated relationships such as *MasterpieceMovie* or *AcclaimedMovie*.
+- **For catalogue curators:** the reasoner catches contradictions (a film with two directors, an actor in two genres of a disjoint pair) automatically — work that today is done manually and incompletely.
+- **For education and research:** the codebase is a compact, end-to-end reference for the Semantic Web stack — Protégé authoring, OWL DL, SWRL, HermiT, OWL API, SPARQL, Apache Jena — in fewer than 1 000 lines of Java. It can be re-targeted to medical drugs, legal precedents, academic papers, or any other domain by replacing the ontology file alone.
+- **Extensibility with zero code changes.** Adding a movie is one more cluster of triples in Protégé. Adding a rule is one more SWRL axiom. Adding a query is one more template constant. The pipeline never has to be touched.
 
 <div style="page-break-after: always;"></div>
 
